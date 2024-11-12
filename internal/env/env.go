@@ -11,20 +11,27 @@ import (
 
 const (
 	// Auth
-	JwtSecret = "JWT_SECRET"
+	JwtSecret stringEnv = "JWT_SECRET"
 	// Time since jwt generation that will cause the jwt to be refreshed
-	JwtRefreshAge = "JWT_REFRESH_AGE"
-	JwtTTl        = "JWT_TTL"
+	JwtRefreshAge intEnv = "JWT_REFRESH_AGE"
+	JwtTTl        intEnv = "JWT_TTL"
 )
 
 const (
 	// Web server stuffs
-	WebDomain     = "WEB_ROOT"
-	CorsAllowHost = "CORS_ALLOW_HOST"
+	WebDomain     stringEnv = "WEB_ROOT"
+	CorsAllowHost stringEnv = "CORS_ALLOW_HOST"
 )
 
-func Get(key string, fallback ...string) string {
-	val := os.Getenv(key)
+const (
+	// Config related stuffs
+	ConfigPath stringEnv = "CONFIG_PATH"
+)
+
+type stringEnv string
+
+func (k stringEnv) Get(fallback ...string) string {
+	val := os.Getenv(string(k))
 
 	if val == "" && len(fallback) > 0 {
 		return fallback[0]
@@ -33,8 +40,10 @@ func Get(key string, fallback ...string) string {
 	return val
 }
 
-func GetEnvInt(key string, fallback ...int) int {
-	val := os.Getenv(key)
+type intEnv string
+
+func (k intEnv) Get(fallback ...int) int {
+	val := os.Getenv(string(k))
 
 	if val == "" && len(fallback) > 0 {
 		return fallback[0]

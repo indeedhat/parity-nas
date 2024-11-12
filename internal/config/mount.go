@@ -8,7 +8,7 @@ import (
 const MountKey = "disk"
 
 type MountCfg struct {
-	baseConfig
+	Version uint `hcl:"version"`
 
 	Tracked []string `hcl:"tracked_disks"`
 }
@@ -17,17 +17,17 @@ type MountCfg struct {
 //
 // If a config file exists then it will attempt to load it otherwise a new instance will be created
 func Mount() (*MountCfg, error) {
-	var c *MountCfg
+	var c MountCfg
 
-	if err := loadConfig(SystemStatusKey, &c); err != nil {
+	if err := loadConfig(MountKey, &c); err != nil {
 		if !errors.Is(fs.ErrNotExist, err) {
 			return nil, err
 		}
 
-		c = &MountCfg{
-			baseConfig: baseConfig{Version: 1},
+		c = MountCfg{
+			Version: 1,
 		}
 	}
 
-	return c, nil
+	return &c, nil
 }

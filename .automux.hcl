@@ -9,9 +9,11 @@ window "Editor" {
 
 window "Shell" {
     split {
-        #     vertical = true
-        #     exec = "cmd_to_run_in_split"
-        #     size = 30
-        #     vertical = true
+        dir = "web/"
+        exec = "npm run dev"
+    }
+    split {
+        vertical = true
+        exec = "air"
     }
 }

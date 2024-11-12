@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -11,12 +13,12 @@ import (
 )
 
 func LiveMonitor(ctx context.Context) error {
-	statusCfg, _ := config.SystemStatus()
-	mountCfg, _ := config.Mount()
-	netIfaceCfg, _ := config.NetInterface()
+	statusCfg, e1 := config.SystemStatus()
+	mountCfg, e2 := config.Mount()
+	netIfaceCfg, e3 := config.NetInterface()
 
 	if statusCfg == nil || mountCfg == nil || netIfaceCfg == nil {
-		return ctx.InternalError("failed to load config")
+		return ctx.InternalError(fmt.Sprintf("failed to load config %s %s %s", e1, e2, e3))
 	}
 
 	monitor := status.NewMonitor(status.Config{
@@ -33,23 +35,26 @@ func LiveMonitor(ctx context.Context) error {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	defer func() {
-		if f, ok := w.(http.Flusher); ok {
-			f.Flush()
-		}
-	}()
-
 	ticker := time.NewTicker(time.Second * time.Duration(statusCfg.PollRate))
-	for range ticker.C {
-		data, _ := json.Marshal(monitor.Read())
 
-		w.Write(data)
-		w.Write([]byte("\n\n"))
+loop:
+	for {
+		select {
+		case <-ctx.Request().Context().Done():
+			break loop
+		case <-ticker.C:
+			data, _ := json.Marshal(monitor.Read())
+			log.Print("sending data: ", string(data))
+
+			w.Write([]byte("data: "))
+			w.Write(data)
+			w.Write([]byte("\n\n"))
+
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+		}
 	}
 
-	if f, ok := w.(http.Flusher); ok {
-		f.Flush()
-	}
-
-	return ctx.NoContent()
+	return nil
 }

@@ -8,7 +8,7 @@ import (
 const SystemStatusKey = "system_status"
 
 type SystemStatusCfg struct {
-	baseConfig
+	Version uint `hcl:"version"`
 
 	PollRate uint8 `hcl:"poll_rate"`
 }
@@ -17,18 +17,18 @@ type SystemStatusCfg struct {
 //
 // If a config file exists then it will attempt to load it otherwise a new instance will be created
 func SystemStatus() (*SystemStatusCfg, error) {
-	var c *SystemStatusCfg
+	var c SystemStatusCfg
 
 	if err := loadConfig(SystemStatusKey, &c); err != nil {
 		if !errors.Is(fs.ErrNotExist, err) {
 			return nil, err
 		}
 
-		c = &SystemStatusCfg{
-			baseConfig: baseConfig{Version: 1},
-			PollRate:   2,
+		c = SystemStatusCfg{
+			Version:  1,
+			PollRate: 2,
 		}
 	}
 
-	return c, nil
+	return &c, nil
 }

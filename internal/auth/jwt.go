@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +20,7 @@ type UserClaims struct {
 
 var ErrInvalidJWT = errors.New("Invalid jwt")
 
-var jwtSecret = os.Getenv(env.JwtSecret)
+var jwtSecret = env.JwtSecret.Get()
 
 // ExtractJwtFromAuthHeader will verify that the Authorization header both exists and is in the
 // Bearer format, if so it will extract the token (hopefully this should be a valid JWT)
@@ -75,7 +74,7 @@ func GenerateUserJwt(id, name string) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID: strconv.Itoa(int(time.Now().Unix())),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(
-				time.Duration(env.GetEnvInt(env.JwtTTl)),
+				time.Duration(env.JwtTTl.Get()) * time.Second,
 			)),
 		},
 		UserName: name,

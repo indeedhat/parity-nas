@@ -21,8 +21,12 @@ type Monitor struct {
 }
 
 func NewMonitor(conf Config) *Monitor {
+	ctx, cancel := context.WithCancel(context.Background())
 	m := &Monitor{
-		conf: conf,
+		conf:      conf,
+		ctx:       ctx,
+		ctxCancel: cancel,
+		status:    newStatus(),
 	}
 
 	m.run()
@@ -46,7 +50,11 @@ func (m *Monitor) run() error {
 	go func() {
 		ticker := time.NewTicker(time.Second * time.Duration(m.conf.PollRate))
 		defer ticker.Stop()
-		defer m.mux.Unlock()
+		defer func() {
+			if m.mux.TryLock() {
+				m.mux.Unlock()
+			}
+		}()
 
 		for {
 			select {

@@ -5,10 +5,10 @@ import (
 	"io/fs"
 )
 
-const NetInterfaceKey = "disk"
+const NetInterfaceKey = "net"
 
 type NetInterfaceCfg struct {
-	baseConfig
+	Version uint `hcl:"version"`
 
 	Tracked []string `hcl:"tracked_ifaces"`
 }
@@ -17,17 +17,17 @@ type NetInterfaceCfg struct {
 //
 // If a config file exists then it will attempt to load it otherwise a new instance will be created
 func NetInterface() (*NetInterfaceCfg, error) {
-	var c *NetInterfaceCfg
+	var c NetInterfaceCfg
 
-	if err := loadConfig(SystemStatusKey, &c); err != nil {
+	if err := loadConfig(NetInterfaceKey, &c); err != nil {
 		if !errors.Is(fs.ErrNotExist, err) {
 			return nil, err
 		}
 
-		c = &NetInterfaceCfg{
-			baseConfig: baseConfig{Version: 1},
+		c = NetInterfaceCfg{
+			Version: 1,
 		}
 	}
 
-	return c, nil
+	return &c, nil
 }

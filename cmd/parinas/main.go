@@ -11,7 +11,7 @@ import (
 func main() {
 	mux := routes.Build()
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{env.Get(env.CorsAllowHost)},
+		AllowedOrigins:   []string{env.CorsAllowHost.Get()},
 		AllowCredentials: true,
 		ExposedHeaders:   []string{"Auth_token"},
 	})
