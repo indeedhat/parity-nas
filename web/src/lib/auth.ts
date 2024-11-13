@@ -19,12 +19,10 @@ export const isLoggedIn = (user: JwtUserData | null): boolean => {
  */
 export const verifySession = async (): Promise<void> => {
     try {
-        await request.post("/api/auth/verify", {});
+        await request.get("/api/auth/verify");
     } catch (e) {
-        toast.error("Invalid sesison");
-
         if (browser) {
-            goto("/auth/login")
+            goto("/")
         }
     }
 };
@@ -38,7 +36,7 @@ export const login = async (user: string, passwd: string): Promise<void> => {
 
         toast.alert("Logged in");
         if (browser) {
-            goto("/");
+            goto("/home");
         }
     } catch (e) {
         console.log(e)
@@ -56,7 +54,7 @@ export const logout = async (): Promise<void> => {
 
         toast.alert("Logged out");
         if (browser) {
-            goto("/account/login");
+            goto("/");
         }
     } catch (e) {
         console.log(e)

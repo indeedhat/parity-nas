@@ -1,24 +1,40 @@
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
-import { jwt } from "$lib/stores";
-let monitorData = $state("")
+import { onMount } from 'svelte'
+import { login, verifySession } from "$lib/auth";
 
-let stream: EventSource;
-onMount(() => {
-    stream = new EventSource(`http://localhost:8080/api/system/monitor?bearer=${$jwt}`)
+let username = $state("")
+let password = $state("")
+let loaded = $state(false)
 
-    stream.onerror = e => monitorData = `error: ${e}`
-    stream.addEventListener("message", ({ data }) => {
-        console.log(data)
-        monitorData = data
-    })
-})
+const handleLogin = async () => await login(username, password)
 
-onDestroy(() => {
-    stream?.close()
+onMount(async () => {
+    try {
+        await verifySession()
+    } catch {}
+
+    loaded = true
 })
 </script>
 
-<pre id="monitor">
-    { monitorData }
-</pre>
+{#if loaded}
+    <section>
+        <fieldset>
+            <legend>Login</legend>
+
+            <form onsubmit={handleLogin}>
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" bind:value={username} />
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" bind:value={password} />
+                </div>
+                <div>
+                    <input type="submit" value="Login" />
+                </div>
+            </form>
+        </fieldset>
+    </section>
+{/if}

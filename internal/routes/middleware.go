@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/indeedhat/parity-nas/internal/auth"
@@ -19,8 +18,6 @@ func isLoggedIn(next RequestHandler) RequestHandler {
 
 		claims, err := auth.VerifyJwt(jwt)
 		if err != nil {
-			log.Print(err)
-			log.Print("invalid token: ", jwt)
 			return ctx.Error(http.StatusUnauthorized, "Not authorized")
 		}
 

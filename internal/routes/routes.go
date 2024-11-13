@@ -16,7 +16,7 @@ func Build() *http.ServeMux {
 
 	private := r.Group("/api", isLoggedIn)
 	{
-		private.Post("/auth/verify", controllers.VerifyLogin)
+		private.Get("/auth/verify", controllers.VerifyLogin)
 		private.Get("/system/monitor", controllers.LiveMonitor)
 	}
 

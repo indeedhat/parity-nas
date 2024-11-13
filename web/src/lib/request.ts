@@ -110,7 +110,7 @@ const handleAuth = (resp: Response) => {
         user.set(null);
 
         if (browser) {
-            goto("/account/login");
+            goto("/");
         }
 
         throw new NotAuthorized();

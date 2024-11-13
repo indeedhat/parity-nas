@@ -94,7 +94,7 @@ func uptime() uint64 {
 
 // cpu parses the /proc/cpuinfo file and returns usage staticstics for each core
 func cpu(history map[string]CpuCore) map[string]CpuCore {
-	data, err := os.ReadFile("/proc/cpuinfo")
+	data, err := os.ReadFile("/proc/stat")
 	if err != nil {
 		return history
 	}
