@@ -8,9 +8,9 @@ import (
 const SystemStatusKey = "system_status"
 
 type SystemStatusCfg struct {
-	Version uint `hcl:"version"`
+	Version uint `icl:"version"`
 
-	PollRate uint8 `hcl:"poll_rate"`
+	PollRate uint8 `icl:"poll_rate"`
 }
 
 // SystemStatus initializes a SystemStatusCfg struct

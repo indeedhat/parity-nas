@@ -28,6 +28,11 @@ const (
 	ConfigPath stringEnv = "CONFIG_PATH"
 )
 
+const (
+	// Debug related stuffs
+	DebugMode boolEnv = "DEBUG_MODE"
+)
+
 type stringEnv string
 
 func (k stringEnv) Get(fallback ...string) string {
@@ -50,6 +55,23 @@ func (k intEnv) Get(fallback ...int) int {
 	}
 
 	parsed, err := strconv.Atoi(val)
+	if err != nil && len(fallback) > 0 {
+		return fallback[0]
+	}
+
+	return parsed
+}
+
+type boolEnv string
+
+func (k boolEnv) Get(fallback ...bool) bool {
+	val := os.Getenv(string(k))
+
+	if val == "" && len(fallback) > 0 {
+		return fallback[0]
+	}
+
+	parsed, err := strconv.ParseBool(val)
 	if err != nil && len(fallback) > 0 {
 		return fallback[0]
 	}

@@ -8,9 +8,9 @@ import (
 const NetInterfaceKey = "net"
 
 type NetInterfaceCfg struct {
-	Version uint `hcl:"version"`
+	Version uint `icl:"version"`
 
-	Tracked []string `hcl:"tracked_ifaces"`
+	Tracked []string `icl:"tracked_ifaces"`
 }
 
 // NetInterface initializes a NetInterfaceCfg struct

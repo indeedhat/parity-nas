@@ -8,9 +8,9 @@ import (
 const MountKey = "disk"
 
 type MountCfg struct {
-	Version uint `hcl:"version"`
+	Version uint `icl:"version"`
 
-	Tracked []string `hcl:"tracked_disks"`
+	Tracked []string `icl:"tracked_disks"`
 }
 
 // Mount initializes a MountCfg struct

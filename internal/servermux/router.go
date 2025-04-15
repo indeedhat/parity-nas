@@ -71,13 +71,13 @@ func (r Router) wrap(handler RequestHandler, middleware ...Middleware) http.Hand
 		case nil:
 			return
 		case Response:
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(resp.Code())
-			w.Header().Set("Content-Type", "application/json")
 			w.Write(resp.Data())
 		default:
 			errResp := ctx.InternalError(err.Error()).(Response)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(errResp.Code())
-			w.Header().Set("Content-Type", "application/json")
 			w.Write(errResp.Data())
 		}
 	}
