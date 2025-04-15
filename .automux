@@ -1,6 +1,5 @@
-session = "parity-nas"
-# config = "./tmux.conf"
-# attach_existing = false
+version = 1
+session_id = "parity-nas"
 
 window "Editor" {
     exec = "vim"

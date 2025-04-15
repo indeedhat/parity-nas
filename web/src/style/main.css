@@ -1,0 +1,23 @@
+:root {
+    /* color */
+    --page-bg: #222528;
+    --primary-text: #FFFFFF;
+    --color-darkest:;
+    --color-dark:;
+    --color-mid:;
+    --color-light:;
+
+    /* size */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+}
+
+body.light {
+
+}
+
+body {
+    background: var(--page-bg);
+    color: var(--primary-text);
+}

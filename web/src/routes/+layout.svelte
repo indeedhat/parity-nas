@@ -1,4 +1,6 @@
 <script lang="ts">
+import '$style/main.css'
+
 import { onMount } from 'svelte';
 
 import { NotAuthorized } from '$lib/request';

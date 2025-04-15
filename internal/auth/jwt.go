@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/indeedhat/parity-nas/internal/env"
-	"github.com/indeedhat/parity-nas/internal/routes/context"
+	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
 type UserClaims struct {
@@ -22,9 +22,29 @@ var ErrInvalidJWT = errors.New("Invalid jwt")
 
 var jwtSecret = env.JwtSecret.Get()
 
-// ExtractJwtFromAuthHeader will verify that the Authorization header both exists and is in the
+// GenerateJWT will generate a new JWT for the given account model
+func GenerateJWT(claims jwt.Claims) (string, error) {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
+		SignedString([]byte(jwtSecret))
+}
+
+// GenerateUserJwt genertes a new JWT specifically for a user login session
+func GenerateUserJwt(id, name string) (string, error) {
+	return GenerateJWT(UserClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID: strconv.Itoa(int(time.Now().Unix())),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(
+				time.Duration(env.JwtTTl.Get()) * time.Second,
+			)),
+		},
+		UserName: name,
+		UserId:   id,
+	})
+}
+
+// extractJwtFromAuthHeader will verify that the Authorization header both exists and is in the
 // Bearer format, if so it will extract the token (hopefully this should be a valid JWT)
-func ExtractJwtFromAuthHeader(ctx context.Context) string {
+func extractJwtFromAuthHeader(ctx servermux.Context) string {
 	authHeader := ctx.Request().Header.Get("Authorization")
 	if authHeader == "" {
 		return ""
@@ -43,7 +63,7 @@ func ExtractJwtFromAuthHeader(ctx context.Context) string {
 }
 
 // VerifyJwt will check that the JWT is both a jwt and valid
-func VerifyJwt(jwtString string) (jwt.MapClaims, error) {
+func verifyJwt(jwtString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
 		if token.Method.Alg() != "HS256" {
 			return nil, ErrInvalidJWT
@@ -61,23 +81,4 @@ func VerifyJwt(jwtString string) (jwt.MapClaims, error) {
 	} else {
 		return claims, nil
 	}
-}
-
-// GenerateJWT will generate a new JWT for the given account model
-func GenerateJWT(claims jwt.Claims) (string, error) {
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
-		SignedString([]byte(jwtSecret))
-}
-
-func GenerateUserJwt(id, name string) (string, error) {
-	return GenerateJWT(UserClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ID: strconv.Itoa(int(time.Now().Unix())),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(
-				time.Duration(env.JwtTTl.Get()) * time.Second,
-			)),
-		},
-		UserName: name,
-		UserId:   id,
-	})
 }

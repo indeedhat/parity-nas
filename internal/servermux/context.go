@@ -1,4 +1,4 @@
-package context
+package servermux
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ type Context struct {
 	data map[string]any
 }
 
-func New(rw http.ResponseWriter, r *http.Request) Context {
+func NewContext(rw http.ResponseWriter, r *http.Request) Context {
 	return Context{
 		rw:   rw,
 		req:  r,

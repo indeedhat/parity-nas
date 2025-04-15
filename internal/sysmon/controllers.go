@@ -1,4 +1,4 @@
-package controllers
+package sysmon
 
 import (
 	"encoding/json"
@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/indeedhat/parity-nas/internal/config"
-	"github.com/indeedhat/parity-nas/internal/routes/context"
-	"github.com/indeedhat/parity-nas/internal/status"
+	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
-func LiveMonitor(ctx context.Context) error {
+func LiveMonitorController(ctx servermux.Context) error {
 	statusCfg, e1 := config.SystemStatus()
 	mountCfg, e2 := config.Mount()
 	netIfaceCfg, e3 := config.NetInterface()
@@ -21,7 +20,7 @@ func LiveMonitor(ctx context.Context) error {
 		return ctx.InternalError(fmt.Sprintf("failed to load config %s %s %s", e1, e2, e3))
 	}
 
-	monitor := status.NewMonitor(status.Config{
+	monitor := NewMonitor(Config{
 		PollRate:      statusCfg.PollRate,
 		Mounts:        mountCfg.Tracked,
 		NetInterfaces: netIfaceCfg.Tracked,

@@ -3,13 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/indeedhat/parity-nas/internal"
 	"github.com/indeedhat/parity-nas/internal/env"
-	"github.com/indeedhat/parity-nas/internal/routes"
 	"github.com/rs/cors"
 )
 
 func main() {
-	mux := routes.Build()
+	mux := parinas.BuildRoutes()
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{env.CorsAllowHost.Get()},
 		AllowCredentials: true,

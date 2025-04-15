@@ -1,13 +1,10 @@
-package routes
+package servermux
 
 import (
-	"log"
 	"net/http"
-
-	"github.com/indeedhat/parity-nas/internal/routes/context"
 )
 
-type RequestHandler func(context.Context) error
+type RequestHandler func(Context) error
 type Middleware func(RequestHandler) RequestHandler
 
 type Router struct {
@@ -16,11 +13,15 @@ type Router struct {
 	basePath   string
 }
 
-func newRouter(middleware ...Middleware) Router {
+func NewRouter(middleware ...Middleware) Router {
 	return Router{
 		mux:        http.DefaultServeMux,
 		middleware: middleware,
 	}
+}
+
+func (r Router) ServerMux() *http.ServeMux {
+	return r.mux
 }
 
 func (r Router) Get(path string, handler RequestHandler, middleware ...Middleware) {
@@ -28,7 +29,6 @@ func (r Router) Get(path string, handler RequestHandler, middleware ...Middlewar
 }
 
 func (r Router) Post(path string, handler RequestHandler, middleware ...Middleware) {
-	log.Println("POST " + r.basePath + path)
 	r.mux.HandleFunc("POST "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
@@ -64,18 +64,18 @@ func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestH
 
 func (r Router) wrap(handler RequestHandler, middleware ...Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		ctx := context.New(w, req)
+		ctx := NewContext(w, req)
 		err := r.apply(handler, middleware...)(ctx)
 
 		switch resp := err.(type) {
 		case nil:
 			return
-		case context.Response:
+		case Response:
 			w.WriteHeader(resp.Code())
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(resp.Data())
 		default:
-			errResp := ctx.InternalError(err.Error()).(context.Response)
+			errResp := ctx.InternalError(err.Error()).(Response)
 			w.WriteHeader(errResp.Code())
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(errResp.Data())

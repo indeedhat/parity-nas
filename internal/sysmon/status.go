@@ -1,4 +1,4 @@
-package status
+package sysmon
 
 import "encoding/json"
 
