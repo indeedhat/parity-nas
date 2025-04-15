@@ -11,6 +11,8 @@ import (
 	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
+var ErrInvalidJWT = errors.New("Invalid jwt")
+
 type UserClaims struct {
 	jwt.RegisteredClaims
 
@@ -18,14 +20,10 @@ type UserClaims struct {
 	UserId   string `json:"uid"`
 }
 
-var ErrInvalidJWT = errors.New("Invalid jwt")
-
-var jwtSecret = env.JwtSecret.Get()
-
 // GenerateJWT will generate a new JWT for the given account model
 func GenerateJWT(claims jwt.Claims) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).
-		SignedString([]byte(jwtSecret))
+		SignedString([]byte(env.JwtSecret.Get()))
 }
 
 // GenerateUserJwt genertes a new JWT specifically for a user login session
@@ -69,7 +67,7 @@ func verifyJwt(jwtString string) (jwt.MapClaims, error) {
 			return nil, ErrInvalidJWT
 		}
 
-		return []byte(jwtSecret), nil
+		return []byte(env.JwtSecret.Get()), nil
 	})
 
 	if err != nil {

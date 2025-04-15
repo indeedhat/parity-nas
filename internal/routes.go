@@ -10,8 +10,8 @@ import (
 	"github.com/indeedhat/parity-nas/internal/sysmon"
 )
 
-func BuildRoutes() *http.ServeMux {
-	r := servermux.NewRouter()
+func BuildRoutes(serverCfg servermux.ServerConfig) *http.ServeMux {
+	r := servermux.NewRouter(serverCfg)
 
 	public := r.Group("/api", auth.IsGuestMiddleware)
 	{

@@ -6,6 +6,7 @@ import (
 	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
+// IsLoggedInMiddleware will only accept requests from users with a valid login JWT
 func IsLoggedInMiddleware(next servermux.RequestHandler) servermux.RequestHandler {
 	return func(ctx servermux.Context) error {
 		jwt := extractJwtFromAuthHeader(ctx)
@@ -27,6 +28,7 @@ func IsLoggedInMiddleware(next servermux.RequestHandler) servermux.RequestHandle
 	}
 }
 
+// IsGuestMiddleware will only accept requests from users withot a valid login JWT
 func IsGuestMiddleware(next servermux.RequestHandler) servermux.RequestHandler {
 	return func(ctx servermux.Context) error {
 		jwt := extractJwtFromAuthHeader(ctx)

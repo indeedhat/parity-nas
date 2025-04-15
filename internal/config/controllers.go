@@ -9,6 +9,8 @@ type configEntry struct {
 	Error  error
 }
 
+// ViewConfigController is a debug only controller that will return the current state of the full
+// icl config tree
 func ViewConfigController(ctx servermux.Context) error {
 	config := make(map[string]any)
 
@@ -20,6 +22,9 @@ func ViewConfigController(ctx servermux.Context) error {
 
 	sysmon, err := SystemStatus()
 	config["sysmon"] = configEntry{sysmon, err}
+
+	server, err := Server()
+	config["server"] = configEntry{server, err}
 
 	return ctx.Ok(config)
 }

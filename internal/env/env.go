@@ -35,6 +35,7 @@ const (
 
 type stringEnv string
 
+// Get the value of the stringEnv
 func (k stringEnv) Get(fallback ...string) string {
 	val := os.Getenv(string(k))
 
@@ -47,6 +48,7 @@ func (k stringEnv) Get(fallback ...string) string {
 
 type intEnv string
 
+// Get the value of the intEnv
 func (k intEnv) Get(fallback ...int) int {
 	val := os.Getenv(string(k))
 
@@ -64,6 +66,7 @@ func (k intEnv) Get(fallback ...int) int {
 
 type boolEnv string
 
+// Get the value of the boolEnv
 func (k boolEnv) Get(fallback ...bool) bool {
 	val := os.Getenv(string(k))
 

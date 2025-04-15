@@ -7,51 +7,67 @@ import (
 type RequestHandler func(Context) error
 type Middleware func(RequestHandler) RequestHandler
 
+type ServerConfig struct {
+	MaxBodySize int64
+}
+
 type Router struct {
 	mux        *http.ServeMux
 	middleware []Middleware
 	basePath   string
+	cfg        ServerConfig
 }
 
-func NewRouter(middleware ...Middleware) Router {
+// NewRouter creates a new router instance with the provided middleware stack assigned
+func NewRouter(serverCfg ServerConfig, middleware ...Middleware) Router {
 	return Router{
 		mux:        http.DefaultServeMux,
 		middleware: middleware,
+		cfg:        serverCfg,
 	}
 }
 
+// ServerMux returns the underlying http.ServeMux instance
 func (r Router) ServerMux() *http.ServeMux {
 	return r.mux
 }
 
+// Get registers a handler on the GET method on the provided uri
 func (r Router) Get(path string, handler RequestHandler, middleware ...Middleware) {
 	r.mux.HandleFunc("GET "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// Post registers a handler on the POST method on the provided uri
 func (r Router) Post(path string, handler RequestHandler, middleware ...Middleware) {
 	r.mux.HandleFunc("POST "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// Put registers a handler on the PUT method on the provided uri
 func (r Router) Put(path string, handler RequestHandler, middleware ...Middleware) {
 	r.mux.HandleFunc("PUT "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// Patch registers a handler on the PATCH method on the provided uri
 func (r Router) Patch(path string, handler RequestHandler, middleware ...Middleware) {
 	r.mux.HandleFunc("PATCH "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// Delete registers a handler on the DELETE method on the provided uri
 func (r Router) Delete(path string, handler RequestHandler, middleware ...Middleware) {
 	r.mux.HandleFunc("DELETE "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// Group creates a sub router and assigns a base path and middleware to all routes assigned within it
 func (r Router) Group(path string, middleware ...Middleware) Router {
 	return Router{
 		mux:        r.mux,
 		basePath:   r.basePath + path,
 		middleware: append(r.middleware, middleware...),
+		cfg:        r.cfg,
 	}
 }
 
+// apply middleware to the handler
 func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestHandler {
 	stack := append(r.middleware, middleware...)
 
@@ -62,9 +78,10 @@ func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestH
 	return handler
 }
 
+// wrap handler in a response parsing closure
 func (r Router) wrap(handler RequestHandler, middleware ...Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		ctx := NewContext(w, req)
+		ctx := NewContext(r.cfg, w, req)
 		err := r.apply(handler, middleware...)(ctx)
 
 		switch resp := err.(type) {

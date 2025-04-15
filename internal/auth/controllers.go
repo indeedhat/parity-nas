@@ -11,6 +11,7 @@ type loginRequest struct {
 	Passwd string `json:"passwd" validate:"required"`
 }
 
+// LoginController handles user login attempts
 func LoginController(ctx servermux.Context) error {
 	var req loginRequest
 	if err := ctx.UnmarshalBody(&req); err != nil {
@@ -32,8 +33,9 @@ func LoginController(ctx servermux.Context) error {
 	return ctx.NoContent()
 }
 
+// VerifyLoginController returns the current status of the login
+//
+// actually it does nothing, it just allows the middleware to run
 func VerifyLoginController(ctx servermux.Context) error {
-	// NB: This controller only really exists to allow the auth middleware to run, it doesn't
-	//     actually need to do anything itself
 	return ctx.NoContent()
 }

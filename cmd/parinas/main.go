@@ -1,15 +1,25 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/indeedhat/parity-nas/internal"
+	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/env"
+	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/rs/cors"
 )
 
 func main() {
-	mux := parinas.BuildRoutes()
+	serverCfg, err := config.Server()
+	if err != nil {
+		log.Fatalf("Failed to load server config: %s", err)
+	}
+
+	mux := parinas.BuildRoutes(servermux.ServerConfig{
+		MaxBodySize: serverCfg.MaxBodySize,
+	})
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{env.CorsAllowHost.Get()},

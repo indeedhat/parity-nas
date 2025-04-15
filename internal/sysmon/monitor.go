@@ -20,6 +20,7 @@ type Monitor struct {
 	ctxCancel context.CancelFunc
 }
 
+// NewMonitor instantiates a new Monitor instance
 func NewMonitor(conf Config) *Monitor {
 	ctx, cancel := context.WithCancel(context.Background())
 	m := &Monitor{
@@ -42,6 +43,7 @@ func (m *Monitor) Read() Status {
 	return m.status
 }
 
+// Close the Monitor's dependencies
 func (m *Monitor) Close() {
 	m.ctxCancel()
 }

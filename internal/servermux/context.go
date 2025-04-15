@@ -13,26 +13,32 @@ type Context struct {
 	rw   http.ResponseWriter
 	req  *http.Request
 	data map[string]any
+	cfg  ServerConfig
 }
 
-func NewContext(rw http.ResponseWriter, r *http.Request) Context {
+// NewContext creates a new instance of the servermux context from the provided ResponseWriter and Request params
+func NewContext(cfg ServerConfig, rw http.ResponseWriter, r *http.Request) Context {
 	return Context{
 		rw:   rw,
 		req:  r,
-		data: make(map[string]any)}
+		data: make(map[string]any),
+		cfg:  cfg,
+	}
 }
 
+// Request returns the underlying Request instance
 func (c Context) Request() *http.Request {
 	return c.req
 }
 
+// Writer returns the underlying ResponseWriter instance
 func (c Context) Writer() http.ResponseWriter {
 	return c.rw
 }
 
+// Body reads in the Request body as a byte array
 func (c Context) Body() []byte {
-	// 1 MB limit
-	data, err := io.ReadAll(io.LimitReader(c.req.Body, 2<<20))
+	data, err := io.ReadAll(io.LimitReader(c.req.Body, c.cfg.MaxBodySize))
 	if err != nil {
 		return nil
 	}
@@ -41,6 +47,9 @@ func (c Context) Body() []byte {
 	return data
 }
 
+// UnmarshalBody unmarshales the request body into the provided data structure
+//
+// NB: this is JSON only
 func (c Context) UnmarshalBody(v any) error {
 	// 1 MB limit
 	data, err := io.ReadAll(io.LimitReader(c.req.Body, 2<<20))
@@ -53,11 +62,13 @@ func (c Context) UnmarshalBody(v any) error {
 	return json.Unmarshal(data, v)
 }
 
+// Validate runs the provided struct against its validation tags
 func (c Context) Validate(v any) error {
 	checker := validator.New()
 	return checker.Struct(v)
 }
 
+// Error is a convenience methdod for returning an error from a controller
 func (c Context) Error(code int, v any) error {
 	if msg, ok := v.(string); ok {
 		return c.Response(code, errorResponse{msg})
@@ -65,10 +76,12 @@ func (c Context) Error(code int, v any) error {
 	return c.Response(code, v)
 }
 
+// InternalError is a convenience method for returning a 500 error from a controller
 func (c Context) InternalError(msg string) error {
 	return c.Response(http.StatusInternalServerError, errorResponse{msg})
 }
 
+// Response is a convenience method for constructing a response to return from a controller
 func (c Context) Response(code int, v any) error {
 	if v == nil {
 		return Response{code: code}
@@ -82,19 +95,23 @@ func (c Context) Response(code int, v any) error {
 	return Response{code, data}
 }
 
+// Ok is a convenience method for returning a 200 response from a controller
 func (c Context) Ok(v any) error {
 	return c.Response(http.StatusOK, v)
 }
 
+// NoContent is a convenience method for returning a 201 response from a controller
 func (c Context) NoContent() error {
 	return c.Response(http.StatusOK, nil)
 }
 
+// Get a value from the context's key value store
 func (c Context) Get(key string) (any, bool) {
 	val, ok := c.data[key]
 	return val, ok
 }
 
+// Set a value in the context's key value store
 func (c Context) Set(key string, value any) {
 	c.data[key] = value
 }
@@ -104,14 +121,17 @@ type Response struct {
 	data []byte
 }
 
+// Error implements the error interface
 func (r Response) Error() string {
 	return string(r.data)
 }
 
+// Data returns the underlying responses byte array
 func (r Response) Data() []byte {
 	return r.data
 }
 
+// Code returns the internal http status code for the response
 func (r Response) Code() int {
 	return r.code
 }
