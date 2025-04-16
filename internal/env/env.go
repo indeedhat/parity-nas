@@ -33,6 +33,10 @@ const (
 	DebugMode boolEnv = "DEBUG_MODE"
 )
 
+type EnVar[T any] interface {
+	Get(...T) T
+}
+
 type stringEnv string
 
 // Get the value of the stringEnv
@@ -45,6 +49,8 @@ func (k stringEnv) Get(fallback ...string) string {
 
 	return val
 }
+
+var _ EnVar[string] = (*stringEnv)(nil)
 
 type intEnv string
 
@@ -64,6 +70,8 @@ func (k intEnv) Get(fallback ...int) int {
 	return parsed
 }
 
+var _ EnVar[int] = (*intEnv)(nil)
+
 type boolEnv string
 
 // Get the value of the boolEnv
@@ -81,3 +89,5 @@ func (k boolEnv) Get(fallback ...bool) bool {
 
 	return parsed
 }
+
+var _ EnVar[bool] = (*boolEnv)(nil)

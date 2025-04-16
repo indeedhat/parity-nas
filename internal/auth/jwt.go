@@ -16,8 +16,9 @@ var ErrInvalidJWT = errors.New("Invalid jwt")
 type UserClaims struct {
 	jwt.RegisteredClaims
 
-	UserName string `json:"nme"`
-	UserId   string `json:"uid"`
+	UserName   string `json:"nme"`
+	UserId     string `json:"uid"`
+	Permission uint8  `json:"lvl"`
 }
 
 // GenerateJWT will generate a new JWT for the given account model
@@ -27,7 +28,7 @@ func GenerateJWT(claims jwt.Claims) (string, error) {
 }
 
 // GenerateUserJwt genertes a new JWT specifically for a user login session
-func GenerateUserJwt(id, name string) (string, error) {
+func GenerateUserJwt(id, name string, permission uint8) (string, error) {
 	return GenerateJWT(UserClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID: strconv.Itoa(int(time.Now().Unix())),
@@ -35,8 +36,9 @@ func GenerateUserJwt(id, name string) (string, error) {
 				time.Duration(env.JwtTTl.Get()) * time.Second,
 			)),
 		},
-		UserName: name,
-		UserId:   id,
+		UserName:   name,
+		UserId:     id,
+		Permission: permission,
 	})
 }
 
@@ -61,7 +63,7 @@ func extractJwtFromAuthHeader(ctx servermux.Context) string {
 }
 
 // VerifyJwt will check that the JWT is both a jwt and valid
-func verifyJwt(jwtString string) (jwt.MapClaims, error) {
+func verifyJwt(jwtString string) (*UserClaims, error) {
 	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
 		if token.Method.Alg() != "HS256" {
 			return nil, ErrInvalidJWT
@@ -74,9 +76,10 @@ func verifyJwt(jwtString string) (jwt.MapClaims, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); !ok || !token.Valid {
+	claims, ok := token.Claims.(UserClaims)
+	if !ok || !token.Valid {
 		return nil, ErrInvalidJWT
-	} else {
-		return claims, nil
 	}
+
+	return &claims, nil
 }

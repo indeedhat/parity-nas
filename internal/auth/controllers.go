@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/indeedhat/parity-nas/internal/servermux"
@@ -22,9 +23,13 @@ func LoginController(ctx servermux.Context) error {
 		return ctx.Error(http.StatusUnprocessableEntity, err)
 	}
 
-	// TODO: need to actually handle user auth
+	user := attemptSystemLogin(req.User, req.Passwd)
+	log.Print(user)
+	if user == nil {
+		return ctx.Error(http.StatusUnauthorized, "login failed")
+	}
 
-	jwt, err := GenerateUserJwt("1", req.User)
+	jwt, err := GenerateUserJwt("1", req.User, user.Permission)
 	if err != nil {
 		return ctx.InternalError("Failed to process login")
 	}

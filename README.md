@@ -18,9 +18,9 @@ Im proceeding with the expectation of it being a stack but that could well chang
 - [ ] Mobile/desktop friendly UI
     - Primerally focused on desktop management but it would be nice if the UI supported doing simple operations
       in a mobile friendly manner.
-- [ ] System monitor
+- [.] System monitor
 - [ ] Samba shares/user management
 - [ ] Docker compose support for running custom apps
     - It would be nice to have an integration to access the docker web ui's using a pari-nas ui  
       for example plex at nas.local/_/plex rather than something like 192.168.1.104:32400
-- [ ] common config interface for all parinas functionality
+- [.] common config interface for all parinas functionality
