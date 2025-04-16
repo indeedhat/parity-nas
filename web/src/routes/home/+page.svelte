@@ -20,5 +20,5 @@ onDestroy(() => {
 </script>
 
 <pre id="monitor">
-    { monitorData }
+    { JSON.parse(monitorData) }
 </pre>

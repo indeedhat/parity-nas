@@ -7,6 +7,7 @@ import (
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/indeedhat/parity-nas/internal/sysmon"
+	"github.com/indeedhat/parity-nas/internal/tty"
 )
 
 func BuildRoutes(serverCfg servermux.ServerConfig) *http.ServeMux {
@@ -26,6 +27,7 @@ func BuildRoutes(serverCfg servermux.ServerConfig) *http.ServeMux {
 	privateAdmin := r.Group("/api", auth.UserHasPermissionMiddleware(auth.PermissionAdmin))
 	{
 		privateAdmin.Get("/debug/config", config.ViewConfigController)
+		privateAdmin.Get("/system/tty", tty.TtyController)
 	}
 
 	return r.ServerMux()

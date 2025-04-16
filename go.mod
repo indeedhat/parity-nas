@@ -3,8 +3,10 @@ module github.com/indeedhat/parity-nas
 go 1.23.2
 
 require (
+	github.com/creack/pty v1.1.24
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/gorilla/websocket v1.5.3
 	github.com/indeedhat/icl v0.0.0-20241201163654-3fd7f368648f
 	github.com/joho/godotenv v1.5.1
 	github.com/openwall/yescrypt-go v1.0.0

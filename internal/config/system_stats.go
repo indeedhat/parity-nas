@@ -1,8 +1,7 @@
 package config
 
 import (
-	"errors"
-	"io/fs"
+	"os"
 )
 
 const SystemStatusKey = "system_status"
@@ -20,7 +19,7 @@ func SystemStatus() (*SystemStatusCfg, error) {
 	var c SystemStatusCfg
 
 	if err := loadConfig(SystemStatusKey, &c); err != nil {
-		if !errors.Is(fs.ErrNotExist, err) {
+		if !os.IsNotExist(err) {
 			return nil, err
 		}
 

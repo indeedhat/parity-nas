@@ -1,8 +1,7 @@
 package config
 
 import (
-	"errors"
-	"io/fs"
+	"os"
 )
 
 const AuthKey = "auth"
@@ -53,7 +52,7 @@ func Auth() (*AuthCfg, error) {
 	var c AuthCfg
 
 	if err := loadConfig(AuthKey, &c); err != nil {
-		if !errors.Is(fs.ErrNotExist, err) {
+		if !os.IsNotExist(err) {
 			return nil, err
 		}
 

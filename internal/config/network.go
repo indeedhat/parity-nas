@@ -1,8 +1,7 @@
 package config
 
 import (
-	"errors"
-	"io/fs"
+	"os"
 )
 
 const NetInterfaceKey = "net"
@@ -20,7 +19,7 @@ func NetInterface() (*NetInterfaceCfg, error) {
 	var c NetInterfaceCfg
 
 	if err := loadConfig(NetInterfaceKey, &c); err != nil {
-		if !errors.Is(fs.ErrNotExist, err) {
+		if !os.IsNotExist(err) {
 			return nil, err
 		}
 

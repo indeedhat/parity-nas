@@ -1,6 +1,8 @@
 package config
 
 import (
+	"io/fs"
+
 	"github.com/indeedhat/icl"
 	"github.com/indeedhat/parity-nas/internal/env"
 )
@@ -31,5 +33,10 @@ func configPath(key string) string {
 func loadConfig(key string, v any) error {
 	path := configPath(key)
 
-	return icl.UnMarshalFile(path, v)
+	err := icl.UnMarshalFile(path, v)
+	if e, ok := err.(*fs.PathError); ok {
+		err = e.Err
+	}
+
+	return err
 }

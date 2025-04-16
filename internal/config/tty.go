@@ -4,28 +4,30 @@ import (
 	"os"
 )
 
-const ServerKey = "server"
+const TtyKey = "tty"
 
-type ServerCfg struct {
+type TtyCfg struct {
 	Version uint `icl:"version"`
 
-	MaxBodySize int64 `icl:"max_body_size"`
+	Shell    string `icl:"shell"`
+	StartDir string `icl:"start_dir"`
 }
 
-// Server initializes a ServerConfig struct
+// Tty initializes a TtyCfg struct
 //
 // If a config file exists then it will attempt to load it otherwise a new instance will be created
-func Server() (*ServerCfg, error) {
-	var c ServerCfg
+func Tty() (*TtyCfg, error) {
+	var c TtyCfg
 
 	if err := loadConfig(ServerKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
 
-		c = ServerCfg{
-			Version:     1,
-			MaxBodySize: 1 << 20, // 1MB
+		c = TtyCfg{
+			Version:  1,
+			Shell:    "bash",
+			StartDir: "/root",
 		}
 	}
 

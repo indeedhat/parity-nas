@@ -26,6 +26,7 @@ onMount(() => {
 <section id="body">
     <header>
         {#if $user?.name}
+            <a href="/tty">Terminal</a>
             <a onclick={logout} href="#">Logout</a>
         {:else}
             <a href="/account/login">Login</a>

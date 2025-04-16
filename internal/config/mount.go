@@ -1,8 +1,7 @@
 package config
 
 import (
-	"errors"
-	"io/fs"
+	"os"
 )
 
 const MountKey = "disk"
@@ -20,7 +19,7 @@ func Mount() (*MountCfg, error) {
 	var c MountCfg
 
 	if err := loadConfig(MountKey, &c); err != nil {
-		if !errors.Is(fs.ErrNotExist, err) {
+		if !os.IsNotExist(err) {
 			return nil, err
 		}
 
