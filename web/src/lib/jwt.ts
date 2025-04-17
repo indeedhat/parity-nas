@@ -1,16 +1,11 @@
 // This file contains helper functions for managing JWT's
 
-import { browser } from "$app/environment";
 import type { JwtToken } from "./types";
 
 /**
  * Parse a jwt token from string into a usable object
  */
 export const parse = (token: string): JwtToken | null => {
-    if (!browser) {
-        return null;
-    }
-
     const body64 = token.split(".")[1];
     const normal64 = body64.replace(/-/g, '+').replace(/_/g, '/');
     const json = decodeURIComponent(

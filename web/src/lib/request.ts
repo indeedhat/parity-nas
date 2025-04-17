@@ -1,10 +1,10 @@
 // This file contains a simple wrapper around the fetch api for more readable http requests
 
 import { get as value } from 'svelte/store';
+import page from 'page'
+
 import { jwt, user } from '$lib/stores'
 import { parse } from '$lib/jwt';
-import { browser } from '$app/environment';
-import { goto } from '$app/navigation';
 import { WebRoot } from '$lib/env';
 import type { Dict, StringDict } from './types';
 
@@ -49,6 +49,7 @@ const noBodyRequest = async (method: string, url: string): Promise<unknown> => {
         };
     }
 
+    console.log(opts)
     const resp = await fetch(WebRoot + url, opts);
 
     handleAuth(resp);
@@ -109,10 +110,7 @@ const handleAuth = (resp: Response) => {
         jwt.set("")
         user.set(null);
 
-        if (browser) {
-            goto("/");
-        }
-
+        page("/account/login");
         throw new NotAuthorized();
     }
 
@@ -120,10 +118,9 @@ const handleAuth = (resp: Response) => {
     resp.headers.forEach(function() {
         console.log(arguments)
     })
-    console.log(token)
+
     if (token !== null && token.startsWith("jwt.")) {
         token = token.substring(4);
-        console.log(token)
         jwt.set(token);
 
         const data = parse(token);

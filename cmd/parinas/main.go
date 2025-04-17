@@ -24,6 +24,7 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{env.CorsAllowHost.Get()},
 		AllowCredentials: true,
+		AllowedHeaders:   []string{"Authorization"},
 		ExposedHeaders:   []string{"Auth_token"},
 	})
 

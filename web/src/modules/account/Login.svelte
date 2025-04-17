@@ -6,7 +6,10 @@ let username = $state("")
 let password = $state("")
 let loaded = $state(false)
 
-const handleLogin = async () => await login(username, password)
+const handleLogin = async (e: Event) => {
+    e.preventDefault()
+    await login(username, password)
+}
 
 onMount(async () => {
     try {

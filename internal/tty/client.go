@@ -3,6 +3,7 @@ package tty
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"os"
 	"strings"
 
@@ -68,6 +69,7 @@ func (c *client) sockToPty() {
 	for {
 		_, msg, err := c.ws.ReadMessage()
 		if err != nil {
+			log.Print(err)
 			c.closeWithNotice("tty read failure")
 			return
 		}
@@ -108,6 +110,7 @@ func (c *client) sockToPty() {
 }
 
 func (c *client) closeWithNotice(msg string) {
+	log.Printf("close: %s", msg)
 	c.ws.WriteMessage(websocket.TextMessage, []byte(msgTypeNotice+":"+msg))
 
 	c.ctxCancel()

@@ -64,7 +64,7 @@ func extractJwtFromAuthHeader(ctx servermux.Context) string {
 
 // VerifyJwt will check that the JWT is both a jwt and valid
 func verifyJwt(jwtString string) (*UserClaims, error) {
-	token, err := jwt.Parse(jwtString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(jwtString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method.Alg() != "HS256" {
 			return nil, ErrInvalidJWT
 		}
@@ -76,10 +76,10 @@ func verifyJwt(jwtString string) (*UserClaims, error) {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(UserClaims)
+	claims, ok := token.Claims.(*UserClaims)
 	if !ok || !token.Valid {
 		return nil, ErrInvalidJWT
 	}
 
-	return &claims, nil
+	return claims, nil
 }

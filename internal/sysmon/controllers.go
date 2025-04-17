@@ -3,7 +3,6 @@ package sysmon
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -44,7 +43,6 @@ loop:
 			break loop
 		case <-ticker.C:
 			data, _ := json.Marshal(monitor.Read())
-			log.Print("sending data: ", string(data))
 
 			w.Write([]byte("data: "))
 			w.Write(data)

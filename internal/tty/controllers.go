@@ -2,6 +2,8 @@ package tty
 
 import (
 	"context"
+	"log"
+	"net/http"
 	"os/exec"
 
 	"github.com/creack/pty"
@@ -13,17 +15,23 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		// TODO: verify host
+		return true
+	},
 }
 
 // TtyController creates a websocket connection for an interactive shell session
 func TtyController(ctx servermux.Context) error {
 	cfg, err := config.Tty()
 	if err != nil {
+		log.Print("failed to load config")
 		return ctx.InternalError("Failed to load config")
 	}
 
 	conn, err := upgrader.Upgrade(ctx.Writer(), ctx.Request(), nil)
 	if err != nil {
+		log.Print("upgrade fail", err)
 		return ctx.InternalError(err.Error())
 	}
 	defer conn.Close()
@@ -42,8 +50,11 @@ func TtyController(ctx servermux.Context) error {
 
 	select {
 	case <-ctx.Request().Context().Done():
+		log.Print("request done")
 	case <-ptyCtx.Done():
+		log.Print("ctx done")
 	}
+	log.Print("here")
 
 	return nil
 }

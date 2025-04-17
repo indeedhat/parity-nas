@@ -1,7 +1,6 @@
 // This file contains helper functions for user auth
 
-import { browser } from "$app/environment";
-import { goto } from "$app/navigation";
+import page from 'page'
 import request from "./request";
 import { jwt, user } from "./stores";
 import toast from "./toast";
@@ -20,10 +19,12 @@ export const isLoggedIn = (user: JwtUserData | null): boolean => {
 export const verifySession = async (): Promise<void> => {
     try {
         await request.get("/api/auth/verify");
-    } catch (e) {
-        if (browser) {
-            goto("/")
+        if (window.location.pathname == "/") {
+            console.log("redirecting")
+            page.redirect("/home")
         }
+    } catch (e) {
+        page("/account/login")
     }
 };
 
@@ -35,9 +36,7 @@ export const login = async (user: string, passwd: string): Promise<void> => {
         await request.post("/api/auth/login", { user, passwd })
 
         toast.alert("Logged in");
-        if (browser) {
-            goto("/home");
-        }
+        page("/home");
     } catch (e) {
         console.log(e)
         toast.error("Login failed");
@@ -53,9 +52,7 @@ export const logout = async (): Promise<void> => {
         user.set(null);
 
         toast.alert("Logged out");
-        if (browser) {
-            goto("/");
-        }
+        page("/account/login");
     } catch (e) {
         console.log(e)
         toast.error("Logout failed");

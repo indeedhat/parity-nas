@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount, onDestroy } from "svelte";
 import { jwt } from "$lib/stores";
-let monitorData = $state("")
+let monitorData = $state("{}")
 
 let stream: EventSource;
 onMount(() => {
@@ -20,5 +20,5 @@ onDestroy(() => {
 </script>
 
 <pre id="monitor">
-    { JSON.parse(monitorData) }
+    { JSON.stringify(JSON.parse(monitorData), null, 4) }
 </pre>

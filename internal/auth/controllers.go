@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/indeedhat/parity-nas/internal/servermux"
@@ -24,7 +23,6 @@ func LoginController(ctx servermux.Context) error {
 	}
 
 	user := attemptSystemLogin(req.User, req.Passwd)
-	log.Print(user)
 	if user == nil {
 		return ctx.Error(http.StatusUnauthorized, "login failed")
 	}

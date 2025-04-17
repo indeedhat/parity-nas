@@ -1,11 +1,12 @@
 <script lang="ts">
-import '$style/main.css'
+//import '$style/main.css'
 
 import { onMount } from 'svelte';
 
 import { NotAuthorized } from '$lib/request';
 import { user } from '$lib/stores'
 import { logout } from '$lib/auth'
+import { currentRoute } from './routes'
 
 import ToastRack from '$components/toast/ToastRack.svelte';
 
@@ -33,5 +34,5 @@ onMount(() => {
         {/if}
     </header>
     <ToastRack />
-    {@render children()}
+    {@render $currentRoute()}
 </section>

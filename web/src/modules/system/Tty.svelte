@@ -36,7 +36,7 @@ onMount(() => {
     xterm.open(termElement)
     fit.fit()
 
-    sock = new WebSocket(`ws://localhost:8080/api/system/tty?bearer=${jwt}`)
+    sock = new WebSocket(`ws://localhost:8080/api/system/tty?bearer=${$jwt}`)
     sock.onmessage = e => {
         console.log({ onmessage: e.data })
 
