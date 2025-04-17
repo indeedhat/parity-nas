@@ -7,6 +7,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 
 import { jwt } from "$lib/stores";
+import toast from "$lib/toast";
 
 
 let xterm: Terminal
@@ -20,6 +21,10 @@ const termElementMounted: Action = (node: HTMLElement) => {
 }
 
 const resizeTerminal = () => {
+    console.log("resize:" + JSON.stringify({
+        cols: xterm.cols,
+        rows: xterm.rows,
+    }))
     fit.fit()
     sock.send("resize:" + JSON.stringify({
         cols: xterm.cols,
@@ -43,12 +48,15 @@ onMount(() => {
         let [ type, msg ] = new String(e.data).split(":", 2)
         switch (type) {
         case "io":
-            xterm.write(msg)
+            xterm.write(msg.replace('\\r\\n', '\r\n'))
             break
         case "notice":
-            console.log({ msg })
+            toast.notice(msg)
             break
         }
+    }
+    sock.onopen = e => {
+        console.log({ open: e })
     }
 
     xterm.onData(data => {

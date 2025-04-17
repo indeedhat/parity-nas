@@ -58,7 +58,7 @@ func (c *client) ptyToSock() {
 			return
 		}
 
-		if err := c.ws.WriteMessage(websocket.TextMessage, buf[:n]); err != nil {
+		if err := c.ws.WriteMessage(websocket.TextMessage, []byte("io:"+string(buf[:n]))); err != nil {
 			c.closeWithNotice("tty write failure")
 			return
 		}
@@ -82,7 +82,7 @@ func (c *client) sockToPty() {
 
 		switch parts[0] {
 		case msgTypeIo:
-			if _, err := c.ptmx.Write(msg); err != nil {
+			if _, err := c.ptmx.Write([]byte(parts[1])); err != nil {
 				c.closeWithNotice("ws write failure")
 				return
 			}
@@ -90,8 +90,10 @@ func (c *client) sockToPty() {
 			// pass
 		case msgTypeResize:
 			var r resizeMsg
-			if err := json.Unmarshal(msg, &r); err != nil {
+			if err := json.Unmarshal([]byte(parts[1]), &r); err != nil {
+				log.Print(err)
 				c.closeWithNotice("resize msg parse failure")
+				return
 			}
 
 			err := pty.Setsize(c.ptmx, &pty.Winsize{
