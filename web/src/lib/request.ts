@@ -90,6 +90,20 @@ const bodyRequest = async (
 
     handleAuth(resp);
 
+    if (resp.status < 200 || resp.status > 299) {
+        const body: string = await resp.text()
+        let json: null|object = null
+        try {
+             json = await resp.json()
+        } catch {}
+
+        throw <ErrorResponse>{
+            code: resp.status,
+            bodyText: body,
+            body: json
+        }
+    }
+
     if (resp.headers.get('Content-Type') === 'application/json') {
         return await resp.json();
     }
@@ -131,6 +145,12 @@ const handleAuth = (resp: Response) => {
 };
 
 export class NotAuthorized {}
+
+export interface ErrorResponse {
+    code: number
+    body: any
+    bodyText: string
+}
 
 
 export default {

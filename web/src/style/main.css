@@ -1,16 +1,42 @@
+@import 'tailwindcss';
+
+@plugin 'flowbite/plugin';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary-50: #fff5f2;
+  --color-primary-100: #fff1ee;
+  --color-primary-200: #ffe4de;
+  --color-primary-300: #ffd5cc;
+  --color-primary-400: #ffbcad;
+  --color-primary-500: #fe795d;
+  --color-primary-600: #ef562f;
+  --color-primary-700: #eb4f27;
+  --color-primary-800: #cc4522;
+  --color-primary-900: #a5371b;
+}
+
+@layer base {
+  button, [role="button"] {
+    cursor: pointer;
+  }
+}
+@source "../../node_modules/flowbite-svelte/dist";
+
 :root {
-    /* color */
-    --page-bg: #222528;
-    --primary-text: #FFFFFF;
-    --color-darkest:;
+  /* color */
+  --page-bg: #222528;
+  --primary-text: #FFFFFF;
+  --color-darkest:;
     --color-dark:;
-    --color-mid:;
+  --color-mid:;
     --color-light:;
 
-    /* size */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
+  /* size */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
 }
 
 body.light {
@@ -18,6 +44,16 @@ body.light {
 }
 
 body {
-    background: var(--page-bg);
-    color: var(--primary-text);
+  background: var(--page-bg);
+  color: var(--primary-text);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex-grow: 1;
 }

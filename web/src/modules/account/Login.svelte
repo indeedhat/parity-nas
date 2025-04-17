@@ -2,12 +2,15 @@
 import { onMount } from 'svelte'
 import { login, verifySession } from "$lib/auth";
 
+import { Card, Button, Label, Input, Checkbox } from 'flowbite-svelte';
+
 let username = $state("")
 let password = $state("")
 let loaded = $state(false)
 
 const handleLogin = async (e: Event) => {
     e.preventDefault()
+
     await login(username, password)
 }
 
@@ -21,23 +24,23 @@ onMount(async () => {
 </script>
 
 {#if loaded}
-    <section>
-        <fieldset>
-            <legend>Login</legend>
-
-            <form onsubmit={handleLogin}>
-                <div>
-                    <label for="username">Username</label>
-                    <input type="text" id="username" bind:value={username} />
-                </div>
-                <div>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" bind:value={password} />
-                </div>
-                <div>
-                    <input type="submit" value="Login" />
-                </div>
+    <main class="flex justify-center">
+        <div class="content-center">
+        <Card>
+            <form class="flex flex-col space-y-6" onsubmit={handleLogin}>
+                <h3 class="text-xl font-medium text-gray-900 dark:text-white">Login</h3>
+                <Label class="space-y-2">
+                    <span>Username</span>
+                    <Input type="text" placeholder="Username" required />
+                </Label>
+                <Label class="space-y-2">
+                    <span>Password</span>
+                    <Input type="password" name="password" placeholder="•••••" required />
+                </Label>
+                <Button type="submit" class="w-full">Login</Button>
             </form>
-        </fieldset>
-    </section>
+        </Card>
+        </div>
+    </main>
 {/if}
+

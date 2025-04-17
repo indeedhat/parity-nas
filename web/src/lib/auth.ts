@@ -14,6 +14,17 @@ export const isLoggedIn = (user: JwtUserData | null): boolean => {
 };
 
 /**
+ * Check if there is an active user
+ */
+export const redirectGuests = (user: JwtUserData | null): void => {
+    if (isLoggedIn(user)) {
+        return
+    }
+
+    page("/account/login")
+};
+
+/**
  * Attempt to verify the sesison
  */
 export const verifySession = async (): Promise<void> => {
@@ -33,7 +44,8 @@ export const verifySession = async (): Promise<void> => {
  */
 export const login = async (user: string, passwd: string): Promise<void> => {
     try {
-        await request.post("/api/auth/login", { user, passwd })
+        const resp =  await request.post("/api/auth/login", { user, passwd })
+        console.log({ resp })
 
         toast.alert("Logged in");
         page("/home");

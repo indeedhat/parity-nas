@@ -7,7 +7,7 @@ let stream: EventSource;
 onMount(() => {
     stream = new EventSource(`http://localhost:8080/api/system/monitor?bearer=${$jwt}`)
 
-    stream.onerror = e => monitorData = `error: ${e}`
+    stream.onerror = e => monitorData = `{"error": "${e}"}`
     stream.addEventListener("message", ({ data }) => {
         console.log(data)
         monitorData = data

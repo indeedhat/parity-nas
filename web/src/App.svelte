@@ -1,38 +1,44 @@
 <script lang="ts">
-//import '$style/main.css'
+import './style/main.css';
 
 import { onMount } from 'svelte';
-
 import { NotAuthorized } from '$lib/request';
-import { user } from '$lib/stores'
-import { logout } from '$lib/auth'
-import { currentRoute } from './routes'
-
+import { user } from '$lib/stores';
+import { logout, redirectGuests } from '$lib/auth';
+import { currentRoute } from './routes';
 import ToastRack from '$components/toast/ToastRack.svelte';
-
+import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 
 let { children } = $props();
 
 onMount(() => {
-    window.onunhandledrejection = e => {
+    redirectGuests($user)
+
+    window.onunhandledrejection = (e) => {
         e.stopPropagation();
 
         if (e instanceof NotAuthorized) {
             window.location.href = "/account/login";
         }
     };
-})
+});
 </script>
 
-<section id="body">
-    <header>
+<Navbar>
+    <NavBrand href="/home">
+        <span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Parity NAS</span>
+    </NavBrand>
+    <NavHamburger  />
+    <NavUl>
         {#if $user?.name}
-            <a href="/tty">Terminal</a>
-            <a onclick={logout} href="#">Logout</a>
+            <NavLi href="/home">Home</NavLi>
+            <NavLi href="/tty">Terminal</NavLi>
+            <NavLi onclick={logout}>Logout</NavLi>
         {:else}
-            <a href="/account/login">Login</a>
+            <NavLi href="/account/login">Login</NavLi>
         {/if}
-    </header>
-    <ToastRack />
-    {@render $currentRoute()}
-</section>
+    </NavUl>
+</Navbar>
+
+<ToastRack />
+{@render $currentRoute()}

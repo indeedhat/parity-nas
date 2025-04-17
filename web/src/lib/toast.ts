@@ -31,7 +31,7 @@ export const addToast = (toast: ToastNotification): void => {
         id,
         type: 'info',
         dismissible: true,
-        timeout: 6000,
+        timeout: 12_000,
     }
 
     // Push the toast to the top of the list of toasts

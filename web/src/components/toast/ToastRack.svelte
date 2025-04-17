@@ -26,6 +26,7 @@
         right: 0;
         width: auto;
         max-width: 90%;
+        min-width: 40%;
         z-index: 1000;
     }
 </style>
