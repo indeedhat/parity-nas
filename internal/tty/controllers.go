@@ -25,13 +25,11 @@ var upgrader = websocket.Upgrader{
 func TtyController(ctx servermux.Context) error {
 	cfg, err := config.Tty()
 	if err != nil {
-		log.Print("failed to load config")
 		return ctx.InternalError("Failed to load config")
 	}
 
 	conn, err := upgrader.Upgrade(ctx.Writer(), ctx.Request(), nil)
 	if err != nil {
-		log.Print("upgrade fail", err)
 		return ctx.InternalError(err.Error())
 	}
 	defer conn.Close()
@@ -50,11 +48,8 @@ func TtyController(ctx servermux.Context) error {
 
 	select {
 	case <-ctx.Request().Context().Done():
-		log.Print("request done")
 	case <-ptyCtx.Done():
-		log.Print("ctx done")
 	}
-	log.Print("here")
 
 	return nil
 }

@@ -43,9 +43,11 @@ onMount(() => {
 
     sock = new WebSocket(`ws://localhost:8080/api/system/tty?bearer=${$jwt}`)
     sock.onmessage = e => {
-        console.log({ onmessage: e.data })
+        const str = new String(e.data)
+        const splitI = str.indexOf(":")
+        const type = str.substring(0, splitI)
+        const msg = str.substring(splitI + 1)
 
-        let [ type, msg ] = new String(e.data).split(":", 2)
         switch (type) {
         case "io":
             xterm.write(msg.replace('\\r\\n', '\r\n'))
@@ -55,12 +57,8 @@ onMount(() => {
             break
         }
     }
-    sock.onopen = e => {
-        console.log({ open: e })
-    }
 
     xterm.onData(data => {
-        console.log({ onData: data })
         sock.send(`io:${data}`)
     })
 
