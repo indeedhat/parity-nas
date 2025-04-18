@@ -74,7 +74,7 @@ onDestroy(() => {
 })
 </script>
 
-<section id="sysmon">
+<section id="sysmon" class="grid grid-cols-3 gap-4" style="grid-auto-flow: dense;">
     {#if monitorData.error}
         <Alert border color="red" class="shadow">
             <InfoCircleSolid slot="icon" class="w-5 h-5" />
@@ -95,7 +95,7 @@ onDestroy(() => {
             </div>
             <Progressbar progress={memoryTotal} labelOutside={``} />
         </Card>
-        <Card>
+        <Card style="grid-row-end: span 3">
             <h3 class="text-xl font-medium text-gray-900 dark:text-white">CPU {cpuTotal}%</h3>
             {#each Object.entries(monitorData.cpu) as [key, core] (key)}
                 <Progressbar progress={percent(core.total, core.idle)} labelOutside={key} />
