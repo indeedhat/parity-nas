@@ -32,4 +32,5 @@ export interface JwtToken {
 export interface JwtUserData {
     id: string
     name: string
+    level: number
 }

@@ -2,7 +2,6 @@ package tty
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os/exec"
 

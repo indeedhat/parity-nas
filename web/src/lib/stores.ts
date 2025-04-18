@@ -1,6 +1,6 @@
 // This file contains svelte store implementations
 
-import { writable,  get as value  } from "svelte/store";
+import { writable } from "svelte/store";
 import type { JwtUserData } from "./types";
 
 const local = "undefined" != typeof localStorage
@@ -14,7 +14,5 @@ export const user = writable<JwtUserData | null>(
 );
 user.subscribe(usr => local.userData = JSON.stringify(usr));
 
-console.log(local, local.accessToken || "")
 export const jwt = writable<string>(local.accessToken || "");
-console.log(value(jwt))
 jwt.subscribe(j => local.accessToken = j);

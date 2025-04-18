@@ -139,7 +139,7 @@ const handleAuth = (resp: Response) => {
 
         const data = parse(token);
         if (data) {
-            user.set({ name: data.nme, id: data.uid });
+            user.set({ name: data.nme, id: data.uid, level: data.lvl });
         }
     }
 };

@@ -4,7 +4,7 @@ import './style/main.css';
 import { onMount } from 'svelte';
 import { NotAuthorized } from '$lib/request';
 import { user } from '$lib/stores';
-import { logout, redirectGuests } from '$lib/auth';
+import { logout } from '$lib/auth';
 import { currentRoute } from './routes';
 import ToastRack from '$components/toast/ToastRack.svelte';
 import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
@@ -12,8 +12,6 @@ import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
 let { children } = $props();
 
 onMount(() => {
-    redirectGuests($user)
-
     window.onunhandledrejection = (e) => {
         e.stopPropagation();
 

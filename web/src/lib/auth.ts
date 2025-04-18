@@ -1,10 +1,19 @@
 // This file contains helper functions for user auth
 
+import { get as value , type Writable } from 'svelte/store'
 import page from 'page'
 import request from "./request";
 import { jwt, user } from "./stores";
 import toast from "./toast";
 import type { JwtUserData } from "./types";
+
+// Permission levels for a user
+export enum Permission {
+    None = 0,
+    Read = 4,
+    Write = 2,
+    Admin = 1
+}
 
 /**
  * Check if there is an active user
@@ -14,15 +23,93 @@ export const isLoggedIn = (user: JwtUserData | null): boolean => {
 };
 
 /**
- * Check if there is an active user
+ * Check if the user in question has access to a resource
  */
-export const redirectGuests = (user: JwtUserData | null): void => {
-    if (isLoggedIn(user)) {
+export const hasAccess = (user: JwtUserData|null, level: Permission = Permission.None): boolean => {
+    if (!user) {
+        return false
+    }
+
+    return (user.level & level) === level
+}
+
+/**
+ * Guard route access to guest only
+ */
+export const guardGuest = (_, next: () => void) => {
+    if (isLoggedIn(value(user))) {
+        page("/home")
         return
     }
 
-    page("/account/login")
-};
+    next()
+}
+
+/**
+ * Guard route access to logged in users only
+ */
+export const guardUser = (_, next: () => void) => {
+    if (!isLoggedIn(value(user))) {
+        page("/account/login")
+        return
+    }
+
+    next()
+}
+
+/**
+ * Guard route access to users with read access only
+ */
+export const guardReadUser = (_, next: () => void) => {
+    if (!isLoggedIn(value(user))) {
+        page("/account/login")
+        return
+    }
+
+    if (!hasAccess(value(user), Permission.Read)) {
+        toast.error("Access Denied")
+        page("/home")
+        return
+    }
+
+    next()
+}
+
+/**
+ * Guard route access to users with write access only
+ */
+export const guardWriteUser = (_, next: () => void) => {
+    if (!isLoggedIn(value(user))) {
+        page("/account/login")
+        return
+    }
+
+    if (!hasAccess(value(user), Permission.Write)) {
+        toast.error("Access Denied")
+        page("/home")
+        return
+    }
+
+    next()
+}
+
+/**
+ * Guard route access to users with admin access only
+ */
+export const guardAdminUser = (_, next: () => void) => {
+    if (!isLoggedIn(value(user))) {
+        page("/account/login")
+        return
+    }
+
+    if (!hasAccess(value(user), Permission.Admin)) {
+        toast.error("Access Denied")
+        page("/home")
+        return
+    }
+
+    next()
+}
 
 /**
  * Attempt to verify the sesison

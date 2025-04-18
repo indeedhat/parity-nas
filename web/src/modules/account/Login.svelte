@@ -31,11 +31,11 @@ onMount(async () => {
                 <h3 class="text-xl font-medium text-gray-900 dark:text-white">Login</h3>
                 <Label class="space-y-2">
                     <span>Username</span>
-                    <Input type="text" placeholder="Username" required />
+                    <Input type="text" placeholder="Username" bind:value={username} required />
                 </Label>
                 <Label class="space-y-2">
                     <span>Password</span>
-                    <Input type="password" name="password" placeholder="•••••" required />
+                    <Input type="password" name="password" placeholder="•••••" bind:value={password} required />
                 </Label>
                 <Button type="submit" class="w-full">Login</Button>
             </form>
