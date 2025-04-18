@@ -82,16 +82,16 @@ func (m *Monitor) run() error {
 }
 
 // uptime parses the /proc/uptime file and returns uptime in seconds
-func uptime() uint64 {
+func uptime() string {
 	line, err := os.ReadFile("/proc/uptime")
 	if err != nil {
-		return 0
+		return "0"
 	}
 
 	parts := strings.Split(string(line), ".")
 	uptime, _ := strconv.ParseUint(parts[0], 10, 64)
 
-	return uptime
+	return time.Duration(uptime * uint64(time.Second)).String()
 }
 
 // cpu parses the /proc/cpuinfo file and returns usage staticstics for each core

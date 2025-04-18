@@ -9,7 +9,7 @@ type Config struct {
 }
 
 type Status struct {
-	Uptime  uint64                  `json:"uptime"`
+	Uptime  string                  `json:"uptime"`
 	Cpu     map[string]CpuCore      `json:"cpu,omitempty"`
 	Mounts  map[string]Usage        `json:"mounts,omitempty"`
 	Memory  Usage                   `json:"memory,omitempty"`

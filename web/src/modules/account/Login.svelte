@@ -2,7 +2,7 @@
 import { onMount } from 'svelte'
 import { login, verifySession } from "$lib/auth";
 
-import { Card, Button, Label, Input, Checkbox } from 'flowbite-svelte';
+import { Card, Button, Label, Input } from 'flowbite-svelte';
 
 let username = $state("")
 let password = $state("")
