@@ -3,6 +3,7 @@ package servermux
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -79,6 +80,15 @@ func (c Context) Error(code int, v any) error {
 // InternalError is a convenience method for returning a 500 error from a controller
 func (c Context) InternalError(msg string) error {
 	return c.Response(http.StatusInternalServerError, errorResponse{msg})
+}
+
+// InternalErrorf is a convenience method for returning a 500 error from a controller that inclueds
+// string formatting
+func (c Context) InternalErrorf(msg string, a ...any) error {
+	return c.Response(
+		http.StatusInternalServerError,
+		errorResponse{fmt.Sprintf(msg, a...)},
+	)
 }
 
 // Response is a convenience method for constructing a response to return from a controller

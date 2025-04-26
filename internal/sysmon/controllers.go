@@ -2,7 +2,6 @@ package sysmon
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -17,7 +16,7 @@ func LiveMonitorController(ctx servermux.Context) error {
 	netIfaceCfg, e3 := config.NetInterface()
 
 	if statusCfg == nil || mountCfg == nil || netIfaceCfg == nil {
-		return ctx.InternalError(fmt.Sprintf("failed to load config %s %s %s", e1, e2, e3))
+		return ctx.InternalErrorf("failed to load config %s %s %s", e1, e2, e3)
 	}
 
 	monitor := NewMonitor(Config{

@@ -17,9 +17,17 @@ func main() {
 		log.Fatalf("Failed to load server config: %s", err)
 	}
 
-	mux := parinas.BuildRoutes(servermux.ServerConfig{
-		MaxBodySize: serverCfg.MaxBodySize,
-	})
+	proxyCfg, err := config.WebProxy()
+	if err != nil {
+		log.Fatalf("Failed to load web proxy config: %s", err)
+	}
+
+	mux := parinas.BuildRoutes(
+		servermux.ServerConfig{
+			MaxBodySize: serverCfg.MaxBodySize,
+		},
+		proxyCfg,
+	)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{env.CorsAllowHost.Get()},

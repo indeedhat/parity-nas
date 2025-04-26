@@ -19,7 +19,7 @@ type TtyCfg struct {
 func Tty() (*TtyCfg, error) {
 	var c TtyCfg
 
-	if err := loadConfig(ServerKey, &c); err != nil {
+	if err := loadConfig(TtyKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

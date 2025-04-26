@@ -12,5 +12,5 @@ export default defineConfig({
       "$components": path.resolve("./src/components"),
       "$modules": path.resolve("./src/modules")
     }
-  }
+  },
 });

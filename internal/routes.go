@@ -8,10 +8,13 @@ import (
 	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/indeedhat/parity-nas/internal/sysmon"
 	"github.com/indeedhat/parity-nas/internal/tty"
+	webproxy "github.com/indeedhat/parity-nas/internal/web_proxy"
 )
 
-func BuildRoutes(serverCfg servermux.ServerConfig) *http.ServeMux {
+func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg) *http.ServeMux {
 	r := servermux.NewRouter(serverCfg)
+
+	r.All("/"+proxyCfg.Prefix+"/", webproxy.WebProxyController)
 
 	public := r.Group("/api", auth.IsGuestMiddleware)
 	{

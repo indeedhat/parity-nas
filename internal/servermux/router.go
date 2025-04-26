@@ -57,6 +57,11 @@ func (r Router) Delete(path string, handler RequestHandler, middleware ...Middle
 	r.mux.HandleFunc("DELETE "+r.basePath+path, r.wrap(handler, middleware...))
 }
 
+// All registers a handler on all request methods on the provided uri
+func (r Router) All(path string, handler RequestHandler, middleware ...Middleware) {
+	r.mux.HandleFunc(path, r.wrap(handler, middleware...))
+}
+
 // Group creates a sub router and assigns a base path and middleware to all routes assigned within it
 func (r Router) Group(path string, middleware ...Middleware) Router {
 	return Router{
