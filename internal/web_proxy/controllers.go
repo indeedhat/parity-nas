@@ -85,7 +85,7 @@ func WebProxyController(ctx servermux.Context) error {
 			case strings.Contains(contentType, "html"):
 				newData, contentLength, err = processHtmlRespons(bodyReader, basePath)
 			case strings.Contains(contentType, "javascript"):
-				bodyReader, err = uncompress(bodyReader, contentEncoding)
+				bodyReader, err = decompress(bodyReader, contentEncoding)
 				newData, contentLength, err = processJavascriptResponse(bodyReader, basePath)
 				if err == nil {
 					newData, err = compress(newData, contentEncoding)

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// findHeadNode traverses the html AST to extract the <head> node
 func findHeadNode(n *html.Node) *html.Node {
 	if n.Type == html.ElementNode && n.Data == "head" {
 		return n
@@ -23,6 +24,7 @@ func findHeadNode(n *html.Node) *html.Node {
 	return nil
 }
 
+// modifyBaseTag searches for the <base> tag and prefixes any root path found there with the provided base path
 func modifyBaseTag(node *html.Node, basePath string) bool {
 	if node.Type == html.ElementNode && node.Data == "base" {
 		for i, attr := range node.Attr {
@@ -63,13 +65,16 @@ func modifyBaseTag(node *html.Node, basePath string) bool {
 	return false
 }
 
+// modifyLinkTags locates all tags with an href/src attribute and prefixes any that are root links
+// (start with /) with the provided basePath
 func modifyLinkTags(node *html.Node, basePath string) {
 	if node.Type == html.ElementNode {
 		for i, attr := range node.Attr {
-			if (attr.Key == "href" || attr.Key == "src") &&
+			hasRootScopedHrefOrSrc := (attr.Key == "href" || attr.Key == "src") &&
 				attr.Val[0] == '/' &&
-				!strings.HasPrefix(attr.Val, basePath) {
+				!strings.HasPrefix(attr.Val, basePath)
 
+			if hasRootScopedHrefOrSrc {
 				node.Attr[i].Val = path.Join(basePath, attr.Val)
 			}
 		}
@@ -80,6 +85,8 @@ func modifyLinkTags(node *html.Node, basePath string) {
 	}
 }
 
+// modifyJsTags locates all <script> tags that have a body containing the import keyword and attempts
+// to prefix and imports from root with the provided basePath
 func modifyJsTags(node *html.Node, basePath string) {
 	isScriptNodeWithImportStatements := node.Type == html.ElementNode &&
 		node.Data == "script" &&
@@ -96,8 +103,11 @@ func modifyJsTags(node *html.Node, basePath string) {
 	}
 }
 
+// importJsRe regex used to identify and extract js import statements
 var importJsRe = regexp.MustCompile(`import(?:["'\s]*([\w*{}\n, ]+)from\s*)?["'\s]*([@\w/_\-.]+)["'\s].*`)
 
+// modifyJsImports extracts all import statments and prefixes any imports from root with the provided
+// basePath
 func modifyJsImports(src, basePath string) string {
 	matches := importJsRe.FindAllStringSubmatch(src, -1)
 
@@ -110,14 +120,14 @@ func modifyJsImports(src, basePath string) string {
 			continue
 		}
 
-		final := ""
+		prefixed := ""
 		if parts[1] == "" {
-			final = importJsRe.ReplaceAllString(parts[0], "import '"+basePath+"${2}';")
+			prefixed = importJsRe.ReplaceAllString(parts[0], "import '"+basePath+"${2}';")
 		} else {
-			final = importJsRe.ReplaceAllString(parts[0], "import ${1} from '"+basePath+"${2}';")
+			prefixed = importJsRe.ReplaceAllString(parts[0], "import ${1} from '"+basePath+"${2}';")
 		}
 
-		src = strings.ReplaceAll(src, parts[0], final)
+		src = strings.ReplaceAll(src, parts[0], prefixed)
 	}
 
 	return src

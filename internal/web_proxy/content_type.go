@@ -7,6 +7,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+// processHtmlRespons takes the provided input stream and rewrites links and js import statements to add the
+// provided base path to any path going from root
 func processHtmlRespons(reader io.Reader, basePath string) (io.Reader, int, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {
@@ -34,6 +36,8 @@ func processHtmlRespons(reader io.Reader, basePath string) (io.Reader, int, erro
 	return bytes.NewReader(buf.Bytes()), buf.Len(), nil
 }
 
+// processJavascriptResponse takes the provided input stream and rewrites all import statements going
+// from root with the provided base path
 func processJavascriptResponse(reader io.Reader, basePath string) (io.Reader, int, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {

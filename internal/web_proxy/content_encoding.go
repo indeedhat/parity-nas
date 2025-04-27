@@ -6,7 +6,8 @@ import (
 	"io"
 )
 
-func uncompress(data io.Reader, algo string) (io.Reader, error) {
+// decompress decompresses the given data stream with the provided encoding algo
+func decompress(data io.Reader, algo string) (io.Reader, error) {
 	switch algo {
 	case "gzip":
 		return gzip.NewReader(data)
@@ -15,6 +16,7 @@ func uncompress(data io.Reader, algo string) (io.Reader, error) {
 	}
 }
 
+// compress compresses the given data stream with the provided encoding algo
 func compress(data io.Reader, algo string) (io.Reader, error) {
 	switch algo {
 	case "gzip":
