@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/servermux"
-	"golang.org/x/net/html"
 )
 
 // WebProxyController sets up a dynamic web proxy to forward traffic from the /./* path to other services
@@ -65,29 +65,40 @@ func WebProxyController(ctx servermux.Context) error {
 				r.Header.Set("location", path.Join(basePath, location))
 			}
 
-			if !strings.Contains(r.Header.Get("Content-Type"), "html") {
-				return nil
-			}
+			var (
+				err             error
+				newData         io.Reader
+				contentLength   int
+				contentType     = r.Header.Get("Content-Type")
+				contentEncoding = r.Header.Get("Content-Encoding")
+			)
 
-			doc, err := html.Parse(r.Body)
+			bodyData, err := io.ReadAll(r.Body)
 			if err != nil {
 				return err
 			}
+			r.Body.Close()
 
-			modifyLinks(doc, basePath)
+			var bodyReader io.Reader = bytes.NewReader(bodyData)
 
-			head := findHeadNode(doc)
-			if head != nil {
-				modifyBaseTag(head, basePath)
+			switch {
+			case strings.Contains(contentType, "html"):
+				newData, contentLength, err = processHtmlRespons(bodyReader, basePath)
+			case strings.Contains(contentType, "javascript"):
+				bodyReader, err = uncompress(bodyReader, contentEncoding)
+				newData, contentLength, err = processJavascriptResponse(bodyReader, basePath)
+				if err == nil {
+					newData, err = compress(newData, contentEncoding)
+				}
 			}
 
-			var buf bytes.Buffer
-			if err := html.Render(&buf, doc); err != nil {
-				return err
+			if newData != nil {
+				r.Body = io.NopCloser(newData)
+				r.ContentLength = int64(contentLength)
+				r.Header.Set("Content-Length", strconv.Itoa(contentLength))
+			} else {
+				r.Body = io.NopCloser(bytes.NewReader(bodyData))
 			}
-
-			log.Print(string(buf.Bytes()))
-			r.Body = io.NopCloser(bytes.NewReader(buf.Bytes()))
 
 			return nil
 		},
@@ -102,76 +113,4 @@ func WebProxyController(ctx servermux.Context) error {
 	proxy.ServeHTTP(ctx.Writer(), ctx.Request())
 
 	return nil
-}
-
-func findHeadNode(n *html.Node) *html.Node {
-	if n.Type == html.ElementNode && n.Data == "head" {
-		return n
-	}
-
-	// Recursively check child nodes
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if head := findHeadNode(c); head != nil {
-			return head
-		}
-	}
-
-	return nil
-}
-
-func modifyBaseTag(node *html.Node, basePath string) bool {
-	if node.Type == html.ElementNode && node.Data == "base" {
-		for i, attr := range node.Attr {
-			if attr.Key == "href" {
-				if !strings.HasPrefix(attr.Val, basePath) {
-					node.Attr[i].Val = path.Join(basePath, attr.Val)
-				}
-				return true
-			}
-		}
-
-		node.Attr = append(node.Attr, html.Attribute{Key: "href", Val: basePath + "/"})
-		return true
-	}
-
-	// Recursively check child nodes
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
-		if modifyBaseTag(child, basePath) {
-			return true
-		}
-	}
-
-	if node.Type == html.ElementNode && node.Data == "head" {
-		baseTag := html.Node{
-			Type: html.ElementNode,
-			Data: "base",
-			Attr: []html.Attribute{
-				{Key: "href", Val: basePath + "/"},
-			},
-		}
-		if node.FirstChild != nil {
-			node.InsertBefore(&baseTag, node.FirstChild)
-		} else {
-			node.AppendChild(&baseTag)
-		}
-	}
-
-	return false
-}
-
-func modifyLinks(node *html.Node, basePath string) {
-	if node.Type == html.ElementNode {
-		for i, attr := range node.Attr {
-			if (attr.Key == "href" || attr.Key == "src") &&
-				attr.Val[0] == '/' &&
-				!strings.HasPrefix(attr.Val, basePath) {
-
-				node.Attr[i].Val = path.Join(basePath, attr.Val)
-			}
-		}
-	}
-
-	for child := node.FirstChild; child != nil; child = child.NextSibling {
-		modifyLinks(child, basePath)
-	}
 }
