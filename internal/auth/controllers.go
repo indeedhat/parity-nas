@@ -12,7 +12,7 @@ type loginRequest struct {
 }
 
 // LoginController handles user login attempts
-func LoginController(ctx servermux.Context) error {
+func LoginController(ctx *servermux.Context) error {
 	var req loginRequest
 	if err := ctx.UnmarshalBody(&req); err != nil {
 		return ctx.Error(http.StatusUnprocessableEntity, "Unprocessale Content")
@@ -39,6 +39,6 @@ func LoginController(ctx servermux.Context) error {
 // VerifyLoginController returns the current status of the login
 //
 // actually it does nothing, it just allows the middleware to run
-func VerifyLoginController(ctx servermux.Context) error {
+func VerifyLoginController(ctx *servermux.Context) error {
 	return ctx.NoContent()
 }

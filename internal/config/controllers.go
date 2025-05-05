@@ -11,7 +11,7 @@ type configEntry struct {
 
 // ViewConfigController is a debug only controller that will return the current state of the full
 // icl config tree
-func ViewConfigController(ctx servermux.Context) error {
+func ViewConfigController(ctx *servermux.Context) error {
 	config := make(map[string]any)
 
 	net, err := NetInterface()

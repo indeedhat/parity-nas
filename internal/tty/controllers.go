@@ -21,7 +21,7 @@ var upgrader = websocket.Upgrader{
 }
 
 // TtyController creates a websocket connection for an interactive shell session
-func TtyController(ctx servermux.Context) error {
+func TtyController(ctx *servermux.Context) error {
 	cfg, err := config.Tty()
 	if err != nil {
 		return ctx.InternalError("Failed to load config")

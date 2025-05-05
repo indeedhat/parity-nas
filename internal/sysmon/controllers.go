@@ -10,7 +10,7 @@ import (
 )
 
 // LiveMonitorController creates an event stream connection to pass back system stats over
-func LiveMonitorController(ctx servermux.Context) error {
+func LiveMonitorController(ctx *servermux.Context) error {
 	statusCfg, e1 := config.SystemStatus()
 	mountCfg, e2 := config.Mount()
 	netIfaceCfg, e3 := config.NetInterface()

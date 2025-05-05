@@ -1,25 +1,27 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/indeedhat/parity-nas/internal"
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/env"
+	"github.com/indeedhat/parity-nas/internal/logging"
 	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/rs/cors"
 )
 
 func main() {
+	logger := logging.New("parinas")
+
 	serverCfg, err := config.Server()
 	if err != nil {
-		log.Fatalf("Failed to load server config: %s", err)
+		logger.Fatalf("Failed to load server config: %s", err)
 	}
 
 	proxyCfg, err := config.WebProxy()
 	if err != nil {
-		log.Fatalf("Failed to load web proxy config: %s", err)
+		logger.Fatalf("Failed to load web proxy config: %s", err)
 	}
 
 	mux := parinas.BuildRoutes(
@@ -36,5 +38,5 @@ func main() {
 		ExposedHeaders:   []string{"Auth_token"},
 	})
 
-	http.ListenAndServe(":8080", c.Handler(mux))
+	logger.Infof("ListenAndServer: %v", http.ListenAndServe(":8080", c.Handler(mux)))
 }

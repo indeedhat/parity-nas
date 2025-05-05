@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -10,11 +9,11 @@ import (
 
 func LoggingMiddleware(logger *Logger) func(servermux.RequestHandler) servermux.RequestHandler {
 	return func(next servermux.RequestHandler) servermux.RequestHandler {
-		return func(ctx servermux.Context) error {
-			log.Print("here")
+		return func(ctx *servermux.Context) error {
 			start := time.Now()
 
 			rw := &responseWrapper{ResponseWriter: ctx.Writer()}
+			ctx.ReplaceWriter(rw)
 
 			defer func() {
 				logger.Zerolog().Info().
@@ -27,7 +26,7 @@ func LoggingMiddleware(logger *Logger) func(servermux.RequestHandler) servermux.
 					Msg("")
 			}()
 
-			return next(ctx.WithWriter(rw))
+			return next(ctx)
 		}
 	}
 }

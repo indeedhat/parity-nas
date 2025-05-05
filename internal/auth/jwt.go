@@ -44,7 +44,7 @@ func GenerateUserJwt(id, name string, permission uint8) (string, error) {
 
 // extractJwtFromAuthHeader will verify that the Authorization header both exists and is in the
 // Bearer format, if so it will extract the token (hopefully this should be a valid JWT)
-func extractJwtFromAuthHeader(ctx servermux.Context) string {
+func extractJwtFromAuthHeader(ctx *servermux.Context) string {
 	authHeader := ctx.Request().Header.Get("Authorization")
 	if authHeader == "" {
 		return ""

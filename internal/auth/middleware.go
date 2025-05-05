@@ -21,7 +21,7 @@ func IsLoggedInMiddleware(next servermux.RequestHandler) servermux.RequestHandle
 // UserHasPermissionMiddleware checks if the logged in user has a specific permission level
 func UserHasPermissionMiddleware(level uint8) func(servermux.RequestHandler) servermux.RequestHandler {
 	return func(next servermux.RequestHandler) servermux.RequestHandler {
-		return func(ctx servermux.Context) error {
+		return func(ctx *servermux.Context) error {
 			jwt := extractJwtFromAuthHeader(ctx)
 			if jwt == "" {
 				if jwt = ctx.Request().URL.Query().Get("bearer"); jwt == "" {
@@ -47,7 +47,7 @@ func UserHasPermissionMiddleware(level uint8) func(servermux.RequestHandler) ser
 
 // IsGuestMiddleware will only accept requests from users withot a valid login JWT
 func IsGuestMiddleware(next servermux.RequestHandler) servermux.RequestHandler {
-	return func(ctx servermux.Context) error {
+	return func(ctx *servermux.Context) error {
 		jwt := extractJwtFromAuthHeader(ctx)
 		if jwt == "" {
 			return next(ctx)

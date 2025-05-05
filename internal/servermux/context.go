@@ -18,8 +18,8 @@ type Context struct {
 }
 
 // NewContext creates a new instance of the servermux context from the provided ResponseWriter and Request params
-func NewContext(cfg ServerConfig, rw http.ResponseWriter, r *http.Request) Context {
-	return Context{
+func NewContext(cfg ServerConfig, rw http.ResponseWriter, r *http.Request) *Context {
+	return &Context{
 		rw:   rw,
 		req:  r,
 		data: make(map[string]any),
@@ -27,29 +27,24 @@ func NewContext(cfg ServerConfig, rw http.ResponseWriter, r *http.Request) Conte
 	}
 }
 
-// WithWriter allows you to create a new Context from the current one with a different ResponseWriter
+// ReplaceWriter allows you to replace the ResponseWriter
 // This allows you to wrap the ResponseWriter from within middleware
-func (c Context) WithWriter(rw http.ResponseWriter) Context {
-	return Context{
-		rw:   rw,
-		req:  c.req,
-		data: c.data,
-		cfg:  c.cfg,
-	}
+func (c *Context) ReplaceWriter(rw http.ResponseWriter) {
+	c.rw = rw
 }
 
 // Request returns the underlying Request instance
-func (c Context) Request() *http.Request {
+func (c *Context) Request() *http.Request {
 	return c.req
 }
 
 // Writer returns the underlying ResponseWriter instance
-func (c Context) Writer() http.ResponseWriter {
+func (c *Context) Writer() http.ResponseWriter {
 	return c.rw
 }
 
 // Body reads in the Request body as a byte array
-func (c Context) Body() []byte {
+func (c *Context) Body() []byte {
 	data, err := io.ReadAll(io.LimitReader(c.req.Body, c.cfg.MaxBodySize))
 	if err != nil {
 		return nil
@@ -62,7 +57,7 @@ func (c Context) Body() []byte {
 // UnmarshalBody unmarshales the request body into the provided data structure
 //
 // NB: this is JSON only
-func (c Context) UnmarshalBody(v any) error {
+func (c *Context) UnmarshalBody(v any) error {
 	// 1 MB limit
 	data, err := io.ReadAll(io.LimitReader(c.req.Body, 2<<20))
 	if err != nil {
@@ -75,13 +70,13 @@ func (c Context) UnmarshalBody(v any) error {
 }
 
 // Validate runs the provided struct against its validation tags
-func (c Context) Validate(v any) error {
+func (c *Context) Validate(v any) error {
 	checker := validator.New()
 	return checker.Struct(v)
 }
 
 // Error is a convenience methdod for returning an error from a controller
-func (c Context) Error(code int, v any) error {
+func (c *Context) Error(code int, v any) error {
 	if msg, ok := v.(string); ok {
 		return c.Response(code, errorResponse{msg})
 	}
@@ -89,13 +84,13 @@ func (c Context) Error(code int, v any) error {
 }
 
 // InternalError is a convenience method for returning a 500 error from a controller
-func (c Context) InternalError(msg string) error {
+func (c *Context) InternalError(msg string) error {
 	return c.Response(http.StatusInternalServerError, errorResponse{msg})
 }
 
 // InternalErrorf is a convenience method for returning a 500 error from a controller that inclueds
 // string formatting
-func (c Context) InternalErrorf(msg string, a ...any) error {
+func (c *Context) InternalErrorf(msg string, a ...any) error {
 	return c.Response(
 		http.StatusInternalServerError,
 		errorResponse{fmt.Sprintf(msg, a...)},
@@ -103,7 +98,7 @@ func (c Context) InternalErrorf(msg string, a ...any) error {
 }
 
 // Response is a convenience method for constructing a response to return from a controller
-func (c Context) Response(code int, v any) error {
+func (c *Context) Response(code int, v any) error {
 	if v == nil {
 		return Response{code: code}
 	}
@@ -117,23 +112,23 @@ func (c Context) Response(code int, v any) error {
 }
 
 // Ok is a convenience method for returning a 200 response from a controller
-func (c Context) Ok(v any) error {
+func (c *Context) Ok(v any) error {
 	return c.Response(http.StatusOK, v)
 }
 
 // NoContent is a convenience method for returning a 201 response from a controller
-func (c Context) NoContent() error {
+func (c *Context) NoContent() error {
 	return c.Response(http.StatusOK, nil)
 }
 
 // Get a value from the context's key value store
-func (c Context) Get(key string) (any, bool) {
+func (c *Context) Get(key string) (any, bool) {
 	val, ok := c.data[key]
 	return val, ok
 }
 
 // Set a value in the context's key value store
-func (c Context) Set(key string, value any) {
+func (c *Context) Set(key string, value any) {
 	c.data[key] = value
 }
 

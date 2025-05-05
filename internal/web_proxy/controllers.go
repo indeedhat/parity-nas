@@ -18,7 +18,7 @@ import (
 
 // WebProxyController sets up a dynamic web proxy to forward traffic from the /./* path to other services
 // running in parity-nas
-func WebProxyController(ctx servermux.Context) error {
+func WebProxyController(ctx *servermux.Context) error {
 	cfg, err := config.WebProxy()
 	if err != nil {
 		return ctx.InternalError("Failed to load proxy config")

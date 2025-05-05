@@ -2,11 +2,9 @@ package servermux
 
 import (
 	"net/http"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
-type RequestHandler func(Context) error
+type RequestHandler func(*Context) error
 type Middleware func(RequestHandler) RequestHandler
 
 type ServerConfig struct {
@@ -21,11 +19,14 @@ type Router struct {
 }
 
 // NewRouter creates a new router instance with the provided middleware stack assigned
-func NewRouter(serverCfg ServerConfig, middleware ...Middleware) Router {
+func NewRouter(serverCfg ServerConfig, logger Middleware, middleware ...Middleware) Router {
 	return Router{
-		mux:        http.DefaultServeMux,
-		middleware: middleware,
-		cfg:        serverCfg,
+		mux: http.DefaultServeMux,
+		middleware: append(
+			[]Middleware{logger, responseWriterMiddleware},
+			middleware...,
+		),
+		cfg: serverCfg,
 	}
 }
 
@@ -78,7 +79,6 @@ func (r Router) Group(path string, middleware ...Middleware) Router {
 func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestHandler {
 	stack := append(r.middleware, middleware...)
 
-	spew.Dump(stack)
 	for i := len(stack) - 1; i >= 0; i-- {
 		handler = stack[i](handler)
 	}
@@ -90,20 +90,28 @@ func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestH
 func (r Router) wrap(handler RequestHandler, middleware ...Middleware) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := NewContext(r.cfg, w, req)
-		err := r.apply(handler, middleware...)(ctx)
+		r.apply(handler, middleware...)(ctx)
+	}
+}
+
+func responseWriterMiddleware(next RequestHandler) RequestHandler {
+	return func(ctx *Context) error {
+		err := next(ctx)
 
 		switch resp := err.(type) {
 		case nil:
-			return
+			// pass
 		case Response:
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(resp.Code())
-			w.Write(resp.Data())
+			ctx.Writer().Header().Set("Content-Type", "application/json; charset=utf-8")
+			ctx.Writer().WriteHeader(resp.Code())
+			ctx.Writer().Write(resp.Data())
 		default:
 			errResp := ctx.InternalError(err.Error()).(Response)
-			w.Header().Set("Content-Type", "application/json; charset=utf-8")
-			w.WriteHeader(errResp.Code())
-			w.Write(errResp.Data())
+			ctx.Writer().Header().Set("Content-Type", "application/json; charset=utf-8")
+			ctx.Writer().WriteHeader(errResp.Code())
+			ctx.Writer().Write(errResp.Data())
 		}
+
+		return nil
 	}
 }
