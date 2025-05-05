@@ -2,6 +2,8 @@ package servermux
 
 import (
 	"net/http"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 type RequestHandler func(Context) error
@@ -76,6 +78,7 @@ func (r Router) Group(path string, middleware ...Middleware) Router {
 func (r Router) apply(handler RequestHandler, middleware ...Middleware) RequestHandler {
 	stack := append(r.middleware, middleware...)
 
+	spew.Dump(stack)
 	for i := len(stack) - 1; i >= 0; i-- {
 		handler = stack[i](handler)
 	}

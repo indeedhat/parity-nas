@@ -3,6 +3,7 @@ package webproxy
 import (
 	"bytes"
 	"io"
+	"log"
 
 	"golang.org/x/net/html"
 )
@@ -33,6 +34,8 @@ func processHtmlRespons(reader io.Reader, basePath string) (io.Reader, int, erro
 		return nil, 0, err
 	}
 
+	log.Print(string(data))
+	log.Print(buf.String())
 	return bytes.NewReader(buf.Bytes()), buf.Len(), nil
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/indeedhat/parity-nas/internal/auth"
 	"github.com/indeedhat/parity-nas/internal/config"
+	"github.com/indeedhat/parity-nas/internal/logging"
 	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/indeedhat/parity-nas/internal/sysmon"
 	"github.com/indeedhat/parity-nas/internal/tty"
@@ -12,7 +13,12 @@ import (
 )
 
 func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg) *http.ServeMux {
-	r := servermux.NewRouter(serverCfg)
+	logger := logging.New("router")
+
+	r := servermux.NewRouter(
+		serverCfg,
+		logging.LoggingMiddleware(logger),
+	)
 
 	r.All("/"+proxyCfg.Prefix+"/", webproxy.WebProxyController)
 

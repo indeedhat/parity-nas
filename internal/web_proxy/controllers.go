@@ -80,9 +80,10 @@ func WebProxyController(ctx servermux.Context) error {
 			r.Body.Close()
 
 			var bodyReader io.Reader = bytes.NewReader(bodyData)
+			log.Print("content-type: ", contentType)
 
 			switch {
-			case strings.Contains(contentType, "html"):
+			case strings.Contains(contentType, "html") || contentType == "":
 				newData, contentLength, err = processHtmlRespons(bodyReader, basePath)
 			case strings.Contains(contentType, "javascript"):
 				bodyReader, err = decompress(bodyReader, contentEncoding)
@@ -90,6 +91,8 @@ func WebProxyController(ctx servermux.Context) error {
 				if err == nil {
 					newData, err = compress(newData, contentEncoding)
 				}
+			default:
+				log.Print("unhandled content type: ", contentType)
 			}
 
 			if newData != nil {
@@ -97,6 +100,7 @@ func WebProxyController(ctx servermux.Context) error {
 				r.ContentLength = int64(contentLength)
 				r.Header.Set("Content-Length", strconv.Itoa(contentLength))
 			} else {
+				log.Print("error: ", err)
 				r.Body = io.NopCloser(bytes.NewReader(bodyData))
 			}
 

@@ -27,6 +27,17 @@ func NewContext(cfg ServerConfig, rw http.ResponseWriter, r *http.Request) Conte
 	}
 }
 
+// WithWriter allows you to create a new Context from the current one with a different ResponseWriter
+// This allows you to wrap the ResponseWriter from within middleware
+func (c Context) WithWriter(rw http.ResponseWriter) Context {
+	return Context{
+		rw:   rw,
+		req:  c.req,
+		data: c.data,
+		cfg:  c.cfg,
+	}
+}
+
 // Request returns the underlying Request instance
 func (c Context) Request() *http.Request {
 	return c.req

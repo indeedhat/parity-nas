@@ -31,6 +31,8 @@ func modifyBaseTag(node *html.Node, basePath string) bool {
 			if attr.Key == "href" {
 				if !strings.HasPrefix(attr.Val, basePath) {
 					node.Attr[i].Val = path.Join(basePath, attr.Val)
+				} else if attr.Val == strings.TrimSuffix(basePath, "/") { // NB: vite dev server issue
+					node.Attr[i].Val = basePath
 				}
 				return true
 			}
