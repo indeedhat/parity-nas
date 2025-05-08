@@ -8,10 +8,16 @@ import (
 
 // LiveMonitorLogs creates an event stream connection to pass back system logs over
 func LiveMonitorLogsController(ctx *servermux.Context) error {
+	l := New("logs")
+
 	readCh := make(chan []byte)
 
-	buffer.Connect(readCh, -1)
+	n := buffer.Connect(readCh, -1)
 	defer buffer.Disconnect(readCh)
+
+	go l.WithData(map[string]any{
+		"log_count": n,
+	}).Info("Live log view opened")
 
 	w := ctx.Writer()
 

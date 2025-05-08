@@ -28,11 +28,11 @@ func newBuffer(size int) *LogBuffer {
 	}
 }
 
-func (b *LogBuffer) Connect(ch chan []byte, preload int) {
+func (b *LogBuffer) Connect(ch chan []byte, preload int) int {
 	b.channels[ch] = true
 
 	if preload == 0 {
-		return
+		return 0
 	}
 
 	var logs [][]byte
@@ -47,6 +47,8 @@ func (b *LogBuffer) Connect(ch chan []byte, preload int) {
 			ch <- l
 		}
 	}()
+
+	return len(logs)
 }
 
 func (b *LogBuffer) Disconnect(ch chan []byte) {
