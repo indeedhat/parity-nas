@@ -10,6 +10,10 @@ import { jwt } from "$lib/stores";
 import toast from "$lib/toast";
 
 
+let initialized = $state(false)
+let { open } = $props()
+
+
 let xterm: Terminal
 let fit: FitAddon
 let sock: WebSocket
@@ -33,7 +37,13 @@ const resizeTerminal = () => {
 }
 
 
-onMount(() => {
+$effect(() => {
+    console.log(open, initialized)
+    if (!open || initialized) {
+        return
+    }
+
+    initialized = true
     xterm = new Terminal()
     fit = new FitAddon()
 
@@ -53,7 +63,7 @@ onMount(() => {
             xterm.write(msg.replace('\\r\\n', '\r\n'))
             break
         case "notice":
-            toast.notice(msg)
+            toast.info(msg)
             break
         }
     }
@@ -80,4 +90,8 @@ onDestroy(() => {
 </svelte:head>
 
 
-<article id="terminal" use:termElementMounted></article>
+<article id="terminal"
+    use:termElementMounted
+    class={ open && initialized ? "" : "hidden" }
+></article>
+

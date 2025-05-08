@@ -11,12 +11,19 @@ import (
 
 // LiveMonitorController creates an event stream connection to pass back system stats over
 func LiveMonitorController(ctx *servermux.Context) error {
-	statusCfg, e1 := config.SystemStatus()
-	mountCfg, e2 := config.Mount()
-	netIfaceCfg, e3 := config.NetInterface()
+	statusCfg, err := config.SystemStatus()
+	if err != nil {
+		return ctx.InternalErrorf("failed to load status config %s", err)
+	}
 
-	if statusCfg == nil || mountCfg == nil || netIfaceCfg == nil {
-		return ctx.InternalErrorf("failed to load config %s %s %s", e1, e2, e3)
+	mountCfg, err := config.Mount()
+	if err != nil {
+		return ctx.InternalErrorf("failed to load mount config %s", err)
+	}
+
+	netIfaceCfg, err := config.NetInterface()
+	if err != nil {
+		return ctx.InternalErrorf("failed to load netif config %s", err)
 	}
 
 	monitor := NewMonitor(Config{

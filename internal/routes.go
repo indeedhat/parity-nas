@@ -37,6 +37,7 @@ func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg)
 	{
 		privateAdmin.Get("/debug/config", config.ViewConfigController)
 		privateAdmin.Get("/system/tty", tty.TtyController)
+		privateAdmin.Get("/system/logs", logging.LiveMonitorLogsController)
 	}
 
 	return r.ServerMux()

@@ -2,14 +2,22 @@
 import './style/main.css';
 
 import { onMount } from 'svelte';
+import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
+
 import { NotAuthorized } from '$lib/request';
 import { user } from '$lib/stores';
 import { logout } from '$lib/auth';
 import { currentRoute } from './routes';
-import ToastRack from '$components/toast/ToastRack.svelte';
-import { Navbar, NavBrand, NavLi, NavUl, NavHamburger } from 'flowbite-svelte';
+import { hasAccess, Permission } from './lib/auth';
 
-let { children } = $props();
+import Tty from '$components/Tty.svelte'
+import ToastRack from '$components/toast/ToastRack.svelte';
+
+let ttyOpen = $state(false)
+
+const toggleTty = () => {
+    ttyOpen = !ttyOpen
+}
 
 onMount(() => {
     window.onunhandledrejection = (e) => {
@@ -30,7 +38,10 @@ onMount(() => {
     <NavUl>
         {#if $user?.name}
             <NavLi href="/home">Home</NavLi>
-            <NavLi href="/tty">Terminal</NavLi>
+            {#if hasAccess($user, Permission.Admin)}
+                <NavLi href="/system/logs">Logs</NavLi>
+                <NavLi onclick={ toggleTty }>Terminal</NavLi>
+            {/if}
             <NavLi onclick={logout}>Logout</NavLi>
         {:else}
             <NavLi href="/account/login">Login</NavLi>
@@ -39,4 +50,5 @@ onMount(() => {
 </Navbar>
 
 <ToastRack />
+<Tty open={ ttyOpen }/>
 {@render $currentRoute()}

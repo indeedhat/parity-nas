@@ -5,7 +5,7 @@ import { writable } from "svelte/store";
 
 import LoginPage from '$modules/account/Login.svelte'
 import HomePage from '$modules/Home.svelte'
-import TtyPage from '$modules/system/Tty.svelte'
+import LogsPage from '$modules/system/Logs.svelte'
 import { guardAdminUser, guardGuest, guardUser } from './lib/auth';
 
 
@@ -21,6 +21,6 @@ const route = (path: string, component: Component, ...middleware: Middleware[]) 
 
 route("/home", HomePage, guardUser)
 route("/account/login", LoginPage, guardGuest)
-route("/tty", TtyPage, guardAdminUser)
+route("/system/logs", LogsPage, guardAdminUser)
 
 page()

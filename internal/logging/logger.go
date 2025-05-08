@@ -21,7 +21,7 @@ func init() {
 		log.Fatal("failed to open log file")
 	}
 
-	buffer := newBuffer(int(cfg.MemoryBufferLen))
+	buffer = newBuffer(int(cfg.MemoryBufferLen))
 	console := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
 		TimeFormat: time.RFC3339,
@@ -32,8 +32,9 @@ func init() {
 }
 
 var (
-	fh *os.File
-	zl zerolog.Logger
+	fh     *os.File
+	zl     zerolog.Logger
+	buffer *LogBuffer
 )
 
 // Close the file handler used by the logger

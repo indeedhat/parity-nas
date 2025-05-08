@@ -12,7 +12,7 @@
 - [ ] provide a web ui to manage samba shares
 
 # tty
-- [ ] persist the terminal session between page loads
+- [x] persist the terminal session between page loads
 
 # plugins
 - [ ] provide a plugin system for external packages
@@ -22,3 +22,9 @@
 
 # moon shot
 - [ ] create a custom device driver to provide parity on non striped drives
+
+# cron
+- [ ] setup a scheduled task system
+
+# cli
+- [ ] provide a cli interface for common tasts

@@ -1,6 +1,9 @@
 package logging
 
 import (
+	"bufio"
+	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -54,3 +57,26 @@ func (w *responseWrapper) Write(buf []byte) (int, error) {
 	w.size += n
 	return n, err
 }
+
+func (w *responseWrapper) Flush() {
+	w.ResponseWriter.(http.Flusher).Flush()
+}
+
+func (w *responseWrapper) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return w.ResponseWriter.(http.Hijacker).Hijack()
+}
+
+func (w *responseWrapper) ReadFrom(r io.Reader) (int64, error) {
+	w.WriteHeader(http.StatusOK)
+
+	n, err := w.ResponseWriter.(io.ReaderFrom).ReadFrom(r)
+	w.size += int(n)
+	return n, err
+}
+
+var (
+	_ http.Flusher  = (*responseWrapper)(nil)
+	_ http.Hijacker = (*responseWrapper)(nil)
+	_ io.ReaderFrom = (*responseWrapper)(nil)
+	_ http.Flusher  = (*responseWrapper)(nil)
+)

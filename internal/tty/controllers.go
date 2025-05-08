@@ -8,6 +8,7 @@ import (
 	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
 	"github.com/indeedhat/parity-nas/internal/config"
+	"github.com/indeedhat/parity-nas/internal/logging"
 	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
@@ -22,13 +23,16 @@ var upgrader = websocket.Upgrader{
 
 // TtyController creates a websocket connection for an interactive shell session
 func TtyController(ctx *servermux.Context) error {
+	logger := logging.New("tty")
 	cfg, err := config.Tty()
 	if err != nil {
+		logger.Errorf("failed to load config: %s", err)
 		return ctx.InternalError("Failed to load config")
 	}
 
 	conn, err := upgrader.Upgrade(ctx.Writer(), ctx.Request(), nil)
 	if err != nil {
+		logger.Errorf("upgrader failed: %s", err)
 		return ctx.InternalError(err.Error())
 	}
 	defer conn.Close()
