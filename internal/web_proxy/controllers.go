@@ -2,6 +2,7 @@ package webproxy
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -79,20 +80,21 @@ func WebProxyController(ctx *servermux.Context) error {
 			}
 			r.Body.Close()
 
-			var bodyReader io.Reader = bytes.NewReader(bodyData)
-			log.Print("content-type: ", contentType)
+			bodyReader, err := decompress(bytes.NewReader(bodyData), contentEncoding)
 
 			switch {
 			case strings.Contains(contentType, "html") || contentType == "":
-				newData, contentLength, err = processHtmlRespons(bodyReader, basePath)
+				newData, contentLength, err = processHtmlRespons(handlerCfg.Mutators, bodyReader, basePath)
 			case strings.Contains(contentType, "javascript"):
-				bodyReader, err = decompress(bodyReader, contentEncoding)
-				newData, contentLength, err = processJavascriptResponse(bodyReader, basePath)
-				if err == nil {
-					newData, err = compress(newData, contentEncoding)
-				}
+				newData, contentLength, err = processJavascriptResponse(handlerCfg.Mutators, bodyReader, basePath)
 			default:
 				log.Print("unhandled content type: ", contentType)
+			}
+
+			if errors.Is(err, errProcessSkipped) {
+				contentLength = int(r.ContentLength)
+			} else if err != nil {
+				newData, err = compress(newData, contentEncoding)
 			}
 
 			if newData != nil {

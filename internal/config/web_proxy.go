@@ -15,10 +15,17 @@ type WebProxyCfg struct {
 }
 
 type WebProxyHandler struct {
-	Prefix string `icl:".param"`
-	Scheme string `icl:"scheme"`
-	Host   string `icl:"host"`
-	Port   uint16 `icl:"port"`
+	Prefix   string           `icl:".param"`
+	Scheme   string           `icl:"scheme"`
+	Host     string           `icl:"host"`
+	Port     uint16           `icl:"port"`
+	Mutators WebProxyMutators `icl:"mutators"`
+}
+
+type WebProxyMutators struct {
+	BaseTag   bool `icl:"base_tag"`
+	HtmlLinks bool `icl:"html_links"`
+	JsImports bool `icl:"js_imports"`
 }
 
 // WebProxy initializes a WebProxyCfg struct
