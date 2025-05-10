@@ -2,6 +2,8 @@ package servermux
 
 import (
 	"net/http"
+	"path"
+	"strings"
 )
 
 type Middleware func(http.HandlerFunc) http.HandlerFunc
@@ -31,34 +33,9 @@ func (r Router) ServerMux() *http.ServeMux {
 	return r.mux
 }
 
-// Get registers a handler on the GET method on the provided uri
-func (r Router) Get(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc("GET "+r.basePath+path, r.wrap(handler, middleware...))
-}
-
-// Post registers a handler on the POST method on the provided uri
-func (r Router) Post(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc("POST "+r.basePath+path, r.wrap(handler, middleware...))
-}
-
-// Put registers a handler on the PUT method on the provided uri
-func (r Router) Put(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc("PUT "+r.basePath+path, r.wrap(handler, middleware...))
-}
-
-// Patch registers a handler on the PATCH method on the provided uri
-func (r Router) Patch(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc("PATCH "+r.basePath+path, r.wrap(handler, middleware...))
-}
-
-// Delete registers a handler on the DELETE method on the provided uri
-func (r Router) Delete(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc("DELETE "+r.basePath+path, r.wrap(handler, middleware...))
-}
-
 // All registers a handler on all request methods on the provided uri
-func (r Router) All(path string, handler http.HandlerFunc, middleware ...Middleware) {
-	r.mux.HandleFunc(path, r.wrap(handler, middleware...))
+func (r Router) HandleFunc(path string, handler http.HandlerFunc, middleware ...Middleware) {
+	r.mux.HandleFunc(r.prefix(path), r.wrap(handler, middleware...))
 }
 
 // Group creates a sub router and assigns a base path and middleware to all routes assigned within it
@@ -90,4 +67,13 @@ func (r Router) wrap(handler http.HandlerFunc, middleware ...Middleware) http.Ha
 
 		r.apply(handler, middleware...)(rw, req)
 	}
+}
+
+func (r Router) prefix(uri string) string {
+	if strings.Contains(uri, " ") {
+		parts := strings.SplitN(uri, " ", 2)
+		return parts[0] + " " + path.Join(r.basePath, strings.Trim(parts[1], " "))
+	}
+
+	return path.Join(r.basePath, uri)
 }

@@ -20,24 +20,24 @@ func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg)
 		logging.LoggingMiddleware(logger),
 	)
 
-	r.All("/"+proxyCfg.Prefix+"/", webproxy.WebProxyController)
+	r.HandleFunc("/"+proxyCfg.Prefix+"/", webproxy.WebProxyController)
 
 	public := r.Group("/api", auth.IsGuestMiddleware)
 	{
-		public.Post("/auth/login", auth.LoginController)
+		public.HandleFunc("POST /auth/login", auth.LoginController)
 	}
 
 	privateAny := r.Group("/api", auth.IsLoggedInMiddleware)
 	{
-		privateAny.Get("/auth/verify", auth.VerifyLoginController)
-		privateAny.Get("/system/monitor", sysmon.LiveMonitorController)
+		privateAny.HandleFunc("GET /auth/verify", auth.VerifyLoginController)
+		privateAny.HandleFunc("GET /system/monitor", sysmon.LiveMonitorController)
 	}
 
 	privateAdmin := r.Group("/api", auth.UserHasPermissionMiddleware(auth.PermissionAdmin))
 	{
-		privateAdmin.Get("/debug/config", config.ViewConfigController)
-		privateAdmin.Get("/system/tty", tty.TtyController)
-		privateAdmin.Get("/system/logs", logging.LiveMonitorLogsController)
+		privateAdmin.HandleFunc("GET /debug/config", config.ViewConfigController)
+		privateAdmin.HandleFunc("GET /system/tty", tty.TtyController)
+		privateAdmin.HandleFunc("GET /system/logs", logging.LiveMonitorLogsController)
 	}
 
 	return r.ServerMux()
