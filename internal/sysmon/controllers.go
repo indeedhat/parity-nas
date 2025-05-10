@@ -6,24 +6,27 @@ import (
 	"time"
 
 	"github.com/indeedhat/parity-nas/internal/config"
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 // LiveMonitorController creates an event stream connection to pass back system stats over
-func LiveMonitorController(ctx *servermux.Context) error {
+func LiveMonitorController(rw http.ResponseWriter, r *http.Request) {
 	statusCfg, err := config.SystemStatus()
 	if err != nil {
-		return ctx.InternalErrorf("failed to load status config %s", err)
+		servermux.InternalErrorf(rw, "failed to load status config %s", err)
+		return
 	}
 
 	mountCfg, err := config.Mount()
 	if err != nil {
-		return ctx.InternalErrorf("failed to load mount config %s", err)
+		servermux.InternalErrorf(rw, "failed to load mount config %s", err)
+		return
 	}
 
 	netIfaceCfg, err := config.NetInterface()
 	if err != nil {
-		return ctx.InternalErrorf("failed to load netif config %s", err)
+		servermux.InternalErrorf(rw, "failed to load netif config %s", err)
+		return
 	}
 
 	monitor := NewMonitor(Config{
@@ -32,33 +35,29 @@ func LiveMonitorController(ctx *servermux.Context) error {
 		NetInterfaces: netIfaceCfg.Tracked,
 	})
 
-	w := ctx.Writer()
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	rw.Header().Set("Content-Type", "text/event-stream")
+	rw.Header().Set("Cache-Control", "no-cache")
+	rw.Header().Set("Connection", "keep-alive")
 
 	ticker := time.NewTicker(time.Second * time.Duration(statusCfg.PollRate))
 
 loop:
 	for {
 		select {
-		case <-ctx.Request().Context().Done():
+		case <-r.Context().Done():
 			break loop
 		case <-ticker.C:
 			data, _ := json.Marshal(monitor.Read())
 
-			w.Write([]byte("data: "))
-			w.Write(data)
-			w.Write([]byte("\n\n"))
+			rw.Write([]byte("data: "))
+			rw.Write(data)
+			rw.Write([]byte("\n\n"))
 
-			if f, ok := w.(http.Flusher); ok {
+			if f, ok := rw.(http.Flusher); ok {
 				f.Flush()
 			}
 		}
 	}
-
-	return nil
 }

@@ -14,71 +14,75 @@ import (
 	"time"
 
 	"github.com/indeedhat/parity-nas/internal/config"
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 // WebProxyController sets up a dynamic web proxy to forward traffic from the /./* path to other services
 // running in parity-nas
-func WebProxyController(ctx *servermux.Context) error {
+func WebProxyController(rw http.ResponseWriter, r *http.Request) {
 	cfg, err := config.WebProxy()
 	if err != nil {
-		return ctx.InternalError("Failed to load proxy config")
+		servermux.InternalError(rw, "Failed to load proxy config")
+		return
 	}
 
-	url := ctx.Request().URL
-	pathParts := strings.Split(url.Path, "/")[1:]
+	pathParts := strings.Split(r.URL.Path, "/")[1:]
 	if len(pathParts) < 2 {
-		return ctx.Error(http.StatusUnprocessableEntity, "Invalid proxy url")
+		servermux.WriteError(rw, http.StatusUnprocessableEntity, "Invalid proxy url")
+		return
 	}
 
 	basePath := "/" + path.Join(pathParts[0], pathParts[1])
 
 	handlerCfg := cfg.FIndHandler(pathParts[1])
 	if handlerCfg == nil {
-		return ctx.Error(
+		servermux.WriteError(
+			rw,
 			http.StatusNotFound,
 			fmt.Sprintf("Cannot find proxy config for prefix /%s/%s", cfg.Prefix, pathParts[1]),
 		)
+		return
 	}
 
-	outUrl, err := url.Parse(fmt.Sprintf("%s://%s:%d/%s",
+	outUrl, err := r.URL.Parse(fmt.Sprintf("%s://%s:%d/%s",
 		handlerCfg.Scheme,
 		handlerCfg.Host,
 		handlerCfg.Port,
 		path.Join(pathParts[2:]...),
 	))
 	if err != nil {
-		return ctx.InternalError("Failed to build up destination url")
+		servermux.InternalError(rw, "Failed to build up destination url")
+		return
 	}
 
 	proxy := httputil.ReverseProxy{
-		Rewrite: func(r *httputil.ProxyRequest) {
-			log.Printf("%s -> %s", url.String(), outUrl.String())
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			log.Printf("%s -> %s", r.URL.String(), outUrl.String())
 
-			r.SetURL(outUrl)
-			r.Out.URL.Path = outUrl.Path
-			r.Out.URL.RawPath = outUrl.RawPath
+			pr.SetURL(outUrl)
+			pr.Out.URL.Path = outUrl.Path
+			pr.Out.URL.RawPath = outUrl.RawPath
 		},
 
-		ModifyResponse: func(r *http.Response) error {
-			location := r.Header.Get("location")
+		ModifyResponse: func(pr *http.Response) error {
+			location := pr.Header.Get("location")
 			if location != "" {
-				r.Header.Set("location", path.Join(basePath, location))
+				pr.Header.Set("location", path.Join(basePath, location))
 			}
 
 			var (
 				err             error
 				newData         io.Reader
 				contentLength   int
-				contentType     = r.Header.Get("Content-Type")
-				contentEncoding = r.Header.Get("Content-Encoding")
+				contentType     = pr.Header.Get("Content-Type")
+				contentEncoding = pr.Header.Get("Content-Encoding")
 			)
 
-			bodyData, err := io.ReadAll(r.Body)
+			bodyData, err := io.ReadAll(pr.Body)
 			if err != nil {
 				return err
 			}
-			r.Body.Close()
+			pr.Body.Close()
 
 			bodyReader, err := decompress(bytes.NewReader(bodyData), contentEncoding)
 
@@ -92,18 +96,18 @@ func WebProxyController(ctx *servermux.Context) error {
 			}
 
 			if errors.Is(err, errProcessSkipped) {
-				contentLength = int(r.ContentLength)
+				contentLength = int(pr.ContentLength)
 			} else if err != nil {
 				newData, err = compress(newData, contentEncoding)
 			}
 
 			if newData != nil {
-				r.Body = io.NopCloser(newData)
-				r.ContentLength = int64(contentLength)
-				r.Header.Set("Content-Length", strconv.Itoa(contentLength))
+				pr.Body = io.NopCloser(newData)
+				pr.ContentLength = int64(contentLength)
+				pr.Header.Set("Content-Length", strconv.Itoa(contentLength))
 			} else {
 				log.Print("error: ", err)
-				r.Body = io.NopCloser(bytes.NewReader(bodyData))
+				pr.Body = io.NopCloser(bytes.NewReader(bodyData))
 			}
 
 			return nil
@@ -116,7 +120,5 @@ func WebProxyController(ctx *servermux.Context) error {
 	proxy.Transport.(*http.Transport).IdleConnTimeout = 10 * time.Second
 	proxy.Transport.(*http.Transport).MaxConnsPerHost = 0
 
-	proxy.ServeHTTP(ctx.Writer(), ctx.Request())
-
-	return nil
+	proxy.ServeHTTP(rw, r)
 }

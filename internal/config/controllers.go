@@ -1,7 +1,9 @@
 package config
 
 import (
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"net/http"
+
+	servermux "github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 type configEntry struct {
@@ -11,7 +13,7 @@ type configEntry struct {
 
 // ViewConfigController is a debug only controller that will return the current state of the full
 // icl config tree
-func ViewConfigController(ctx *servermux.Context) error {
+func ViewConfigController(rw http.ResponseWriter, r *http.Request) {
 	config := make(map[string]any)
 
 	net, err := NetInterface()
@@ -26,5 +28,5 @@ func ViewConfigController(ctx *servermux.Context) error {
 	server, err := Server()
 	config["server"] = configEntry{server, err}
 
-	return ctx.Ok(config)
+	servermux.Ok(rw, config)
 }

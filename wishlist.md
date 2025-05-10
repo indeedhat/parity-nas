@@ -1,6 +1,6 @@
 # proxy
 - [ ] sub domains
-- [ ] enable/disable rewrite features per proxy
+- [x] enable/disable rewrite features per proxy
 
 # logger
 - [ ] live viewer for logs (probably driven by server side events)

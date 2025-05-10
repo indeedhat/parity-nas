@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 type loginRequest struct {
@@ -12,33 +12,35 @@ type loginRequest struct {
 }
 
 // LoginController handles user login attempts
-func LoginController(ctx *servermux.Context) error {
+func LoginController(rw http.ResponseWriter, r *http.Request) {
 	var req loginRequest
-	if err := ctx.UnmarshalBody(&req); err != nil {
-		return ctx.Error(http.StatusUnprocessableEntity, "Unprocessale Content")
+	if err := servermux.UnmarshalBody(r, &req); err != nil {
+		servermux.WriteError(rw, http.StatusUnprocessableEntity, "Unprocessale Content")
+		return
 	}
 
-	if err := ctx.Validate(req); err != nil {
-		return ctx.Error(http.StatusUnprocessableEntity, err)
+	if err := servermux.Validate(req); err != nil {
+		servermux.WriteError(rw, http.StatusUnprocessableEntity, err)
+		return
 	}
 
 	user := attemptSystemLogin(req.User, req.Passwd)
 	if user == nil {
-		return ctx.Error(http.StatusUnauthorized, "login failed")
+		servermux.WriteError(rw, http.StatusUnauthorized, "login failed")
 	}
 
 	jwt, err := GenerateUserJwt("1", req.User, user.Permission)
 	if err != nil {
-		return ctx.InternalError("Failed to process login")
+		servermux.InternalError(rw, "Failed to process login")
 	}
 
-	ctx.Writer().Header().Set("auth_token", "jwt."+jwt)
-	return ctx.NoContent()
+	rw.Header().Set("auth_token", "jwt."+jwt)
+	servermux.NoContent(rw)
 }
 
 // VerifyLoginController returns the current status of the login
 //
 // actually it does nothing, it just allows the middleware to run
-func VerifyLoginController(ctx *servermux.Context) error {
-	return ctx.NoContent()
+func VerifyLoginController(rw http.ResponseWriter, _ *http.Request) {
+	servermux.NoContent(rw)
 }

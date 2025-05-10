@@ -2,12 +2,10 @@ package logging
 
 import (
 	"net/http"
-
-	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
 // LiveMonitorLogs creates an event stream connection to pass back system logs over
-func LiveMonitorLogsController(ctx *servermux.Context) error {
+func LiveMonitorLogsController(rw http.ResponseWriter, r *http.Request) {
 	l := New("logs")
 
 	readCh := make(chan []byte)
@@ -19,29 +17,25 @@ func LiveMonitorLogsController(ctx *servermux.Context) error {
 		"log_count": n,
 	}).Info("Live log view opened")
 
-	w := ctx.Writer()
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	rw.Header().Set("Content-Type", "text/event-stream")
+	rw.Header().Set("Cache-Control", "no-cache")
+	rw.Header().Set("Connection", "keep-alive")
 
 loop:
 	for {
 		select {
-		case <-ctx.Request().Context().Done():
+		case <-r.Context().Done():
 			break loop
 		case data := <-readCh:
-			w.Write([]byte("data: "))
-			w.Write(data)
-			w.Write([]byte("\n\n"))
+			rw.Write([]byte("data: "))
+			rw.Write(data)
+			rw.Write([]byte("\n\n"))
 
-			if f, ok := w.(http.Flusher); ok {
+			if f, ok := rw.(http.Flusher); ok {
 				f.Flush()
 			}
 		}
 	}
-
-	return nil
 }

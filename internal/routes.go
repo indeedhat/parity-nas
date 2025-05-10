@@ -6,10 +6,10 @@ import (
 	"github.com/indeedhat/parity-nas/internal/auth"
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/logging"
-	"github.com/indeedhat/parity-nas/internal/servermux"
 	"github.com/indeedhat/parity-nas/internal/sysmon"
 	"github.com/indeedhat/parity-nas/internal/tty"
 	webproxy "github.com/indeedhat/parity-nas/internal/web_proxy"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg) *http.ServeMux {

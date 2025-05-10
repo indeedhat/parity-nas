@@ -7,7 +7,7 @@ import (
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/env"
 	"github.com/indeedhat/parity-nas/internal/logging"
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 	"github.com/rs/cors"
 )
 

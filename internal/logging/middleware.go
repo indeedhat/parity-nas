@@ -7,29 +7,28 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
-func LoggingMiddleware(logger *Logger) func(servermux.RequestHandler) servermux.RequestHandler {
-	return func(next servermux.RequestHandler) servermux.RequestHandler {
-		return func(ctx *servermux.Context) error {
+func LoggingMiddleware(logger *Logger) servermux.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(rw http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			rw := &responseWrapper{ResponseWriter: ctx.Writer()}
-			ctx.ReplaceWriter(rw)
+			wrw := &responseWrapper{ResponseWriter: rw}
 
 			defer func() {
 				logger.Zerolog().Info().
 					Str("category", logger.Category()).
-					Str("method", ctx.Request().Method).
-					Stringer("url", ctx.Request().URL).
-					Int("status", rw.status).
-					Int("size", rw.size).
+					Str("method", r.Method).
+					Stringer("url", r.URL).
+					Int("status", wrw.status).
+					Int("size", wrw.size).
 					Dur("duration", time.Since(start)).
 					Msg("")
 			}()
 
-			return next(ctx)
+			next(wrw, r)
 		}
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/internal/logging"
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 var upgrader = websocket.Upgrader{
@@ -22,18 +22,20 @@ var upgrader = websocket.Upgrader{
 }
 
 // TtyController creates a websocket connection for an interactive shell session
-func TtyController(ctx *servermux.Context) error {
+func TtyController(rw http.ResponseWriter, r *http.Request) {
 	logger := logging.New("tty")
 	cfg, err := config.Tty()
 	if err != nil {
 		logger.Errorf("failed to load config: %s", err)
-		return ctx.InternalError("Failed to load config")
+		servermux.InternalError(rw, "Failed to load config")
+		return
 	}
 
-	conn, err := upgrader.Upgrade(ctx.Writer(), ctx.Request(), nil)
+	conn, err := upgrader.Upgrade(rw, r, nil)
 	if err != nil {
 		logger.Errorf("upgrader failed: %s", err)
-		return ctx.InternalError(err.Error())
+		servermux.InternalError(rw, err.Error())
+		return
 	}
 	defer conn.Close()
 
@@ -50,9 +52,7 @@ func TtyController(ctx *servermux.Context) error {
 	client.Run()
 
 	select {
-	case <-ctx.Request().Context().Done():
+	case <-r.Context().Done():
 	case <-ptyCtx.Done():
 	}
-
-	return nil
 }

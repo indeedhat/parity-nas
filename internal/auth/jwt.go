@@ -2,13 +2,13 @@ package auth
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/indeedhat/parity-nas/internal/env"
-	"github.com/indeedhat/parity-nas/internal/servermux"
 )
 
 var ErrInvalidJWT = errors.New("Invalid jwt")
@@ -44,8 +44,8 @@ func GenerateUserJwt(id, name string, permission uint8) (string, error) {
 
 // extractJwtFromAuthHeader will verify that the Authorization header both exists and is in the
 // Bearer format, if so it will extract the token (hopefully this should be a valid JWT)
-func extractJwtFromAuthHeader(ctx *servermux.Context) string {
-	authHeader := ctx.Request().Header.Get("Authorization")
+func extractJwtFromAuthHeader(r *http.Request) string {
+	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return ""
 	}

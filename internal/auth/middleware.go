@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/indeedhat/parity-nas/internal/servermux"
+	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
 var (
@@ -14,49 +14,54 @@ var (
 )
 
 // IsLoggedInMiddleware will only accept requests from users with a valid login JWT
-func IsLoggedInMiddleware(next servermux.RequestHandler) servermux.RequestHandler {
+func IsLoggedInMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return UserHasPermissionMiddleware(PermissionAny)(next)
 }
 
 // UserHasPermissionMiddleware checks if the logged in user has a specific permission level
-func UserHasPermissionMiddleware(level uint8) func(servermux.RequestHandler) servermux.RequestHandler {
-	return func(next servermux.RequestHandler) servermux.RequestHandler {
-		return func(ctx *servermux.Context) error {
-			jwt := extractJwtFromAuthHeader(ctx)
+func UserHasPermissionMiddleware(level uint8) servermux.Middleware {
+	return func(next http.HandlerFunc) http.HandlerFunc {
+		return func(rw http.ResponseWriter, r *http.Request) {
+			jwt := extractJwtFromAuthHeader(r)
 			if jwt == "" {
-				if jwt = ctx.Request().URL.Query().Get("bearer"); jwt == "" {
-					return ctx.Error(http.StatusUnauthorized, "Not authorized")
+				if jwt = r.URL.Query().Get("bearer"); jwt == "" {
+					servermux.WriteError(rw, http.StatusUnauthorized, "Not authorized")
+					return
 				}
 			}
 
 			claims, err := verifyJwt(jwt)
 			if err != nil {
-				return ctx.Error(http.StatusUnauthorized, "Not authorized")
+				servermux.WriteError(rw, http.StatusUnauthorized, "Not authorized")
+				return
 			}
 
-			ctx.Set("user-claims", claims)
+			r = r.WithContext(r.Context().(servermux.Context).WithData("user-claims", claims))
 
 			if claims.Permission&level != level {
-				return ctx.Error(http.StatusForbidden, "Forbidden")
+				servermux.WriteError(rw, http.StatusForbidden, "Forbidden")
+				return
 			}
 
-			return next(ctx)
+			next(rw, r)
 		}
 	}
 }
 
 // IsGuestMiddleware will only accept requests from users withot a valid login JWT
-func IsGuestMiddleware(next servermux.RequestHandler) servermux.RequestHandler {
-	return func(ctx *servermux.Context) error {
-		jwt := extractJwtFromAuthHeader(ctx)
+func IsGuestMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		jwt := extractJwtFromAuthHeader(r)
 		if jwt == "" {
-			return next(ctx)
+			next(rw, r)
+			return
 		}
 
 		if _, err := verifyJwt(jwt); err == nil {
-			return next(ctx)
+			next(rw, r)
+			return
 		}
 
-		return ctx.Error(http.StatusForbidden, "Already logged in")
+		servermux.WriteError(rw, http.StatusForbidden, "Already logged in")
 	}
 }
