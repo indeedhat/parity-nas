@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const WebProxyKey = "web_proxy"
@@ -34,7 +36,7 @@ type WebProxyMutators struct {
 func WebProxy() (*WebProxyCfg, error) {
 	var c WebProxyCfg
 
-	if err := loadConfig(WebProxyKey, &c); err != nil {
+	if err := config.Load(WebProxyKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

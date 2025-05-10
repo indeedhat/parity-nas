@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const NetInterfaceKey = "net"
@@ -18,7 +20,7 @@ type NetInterfaceCfg struct {
 func NetInterface() (*NetInterfaceCfg, error) {
 	var c NetInterfaceCfg
 
-	if err := loadConfig(NetInterfaceKey, &c); err != nil {
+	if err := config.Load(NetInterfaceKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

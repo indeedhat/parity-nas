@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const PluginKey = "plugins"
@@ -25,7 +27,7 @@ type PluginEntry struct {
 func Plugins() (*PluginCfg, error) {
 	var c PluginCfg
 
-	if err := loadConfig(PluginKey, &c); err != nil {
+	if err := config.Load(PluginKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

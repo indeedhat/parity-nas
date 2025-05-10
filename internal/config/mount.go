@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const MountKey = "disk"
@@ -18,7 +20,7 @@ type MountCfg struct {
 func Mount() (*MountCfg, error) {
 	var c MountCfg
 
-	if err := loadConfig(MountKey, &c); err != nil {
+	if err := config.Load(MountKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const LoggerKey = "logger"
@@ -19,7 +21,7 @@ type LoggerCfg struct {
 func Logger() (*LoggerCfg, error) {
 	var c LoggerCfg
 
-	if err := loadConfig(LoggerKey, &c); err != nil {
+	if err := config.Load(LoggerKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

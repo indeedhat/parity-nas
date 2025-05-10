@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const ServerKey = "server"
@@ -18,7 +20,7 @@ type ServerCfg struct {
 func Server() (*ServerCfg, error) {
 	var c ServerCfg
 
-	if err := loadConfig(ServerKey, &c); err != nil {
+	if err := config.Load(ServerKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const SystemStatusKey = "system_status"
@@ -18,7 +20,7 @@ type SystemStatusCfg struct {
 func SystemStatus() (*SystemStatusCfg, error) {
 	var c SystemStatusCfg
 
-	if err := loadConfig(SystemStatusKey, &c); err != nil {
+	if err := config.Load(SystemStatusKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}

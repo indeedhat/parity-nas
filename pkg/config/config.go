@@ -29,8 +29,8 @@ func configPath(key string) string {
 	return "/etc/parinas/" + key + fileExt
 }
 
-// loadConfig attempts to load a config struct from file by its type key
-func loadConfig(key string, v any) error {
+// Load attempts to load a config struct from file by its type key
+func Load(key string, v any) error {
 	path := configPath(key)
 
 	err := icl.UnMarshalFile(path, v)

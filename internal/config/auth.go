@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+
+	"github.com/indeedhat/parity-nas/pkg/config"
 )
 
 const AuthKey = "auth"
@@ -51,7 +53,7 @@ type AuthCfg struct {
 func Auth() (*AuthCfg, error) {
 	var c AuthCfg
 
-	if err := loadConfig(AuthKey, &c); err != nil {
+	if err := config.Load(AuthKey, &c); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
