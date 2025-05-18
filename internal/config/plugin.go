@@ -46,11 +46,11 @@ func (e PluginEntry) ArchiveSavePath(cfg *PluginCfg) string {
 }
 
 func (e PluginEntry) ArchiveExtractPath(cfg *PluginCfg) string {
-	return path.Join(cfg.TempPath, e.Name()+"_"+e.Version)
+	return path.Join(cfg.TempPath, e.Name()+"-"+e.Version)
 }
 
 func (e PluginEntry) SharedObjectPath(cfg *PluginCfg) string {
-	return path.Join(cfg.SavePath, e.Name()+"_"+e.Version) + ".so"
+	return path.Join(cfg.SavePath, e.Name()+"-"+e.Version) + ".so"
 }
 
 // Server initializes a ServerConfig struct

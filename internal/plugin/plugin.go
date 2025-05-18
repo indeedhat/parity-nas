@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"path"
 	"plugin"
 
 	"github.com/indeedhat/parity-nas/internal/config"
@@ -46,7 +47,7 @@ func (m PluginManager) installPlugin(entry config.PluginEntry) error {
 		return err
 	}
 	// NB: this will also clean up the extracted files from the next stage if it gets that far
-	defer m.log.Infof("cleanup %s", m.cleanupArchive(entry))
+	defer m.cleanupArchive(entry)
 
 	if err := m.extractArchive(entry); err != nil {
 		m.log.Error("extract fail")
@@ -62,8 +63,13 @@ func (m PluginManager) installPlugin(entry config.PluginEntry) error {
 }
 
 func (m PluginManager) buildGoBinary(entry config.PluginEntry) error {
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", entry.SharedObjectPath(m.cfg), ".")
+	cwd, _ := os.Getwd()
+	soPath := path.Join(cwd, entry.SharedObjectPath(m.cfg))
+
+	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", soPath, "main.go")
 	cmd.Dir = entry.ArchiveExtractPath(m.cfg)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
 }
