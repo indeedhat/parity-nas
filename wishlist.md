@@ -33,6 +33,6 @@
 - [ ] reduce external dependencies as much as possible
 
 # plugins
-- [ ] provide a way to extend api functionalyty with go plugins
+- [x] provide a way to extend api functionalyty with go plugins
 - [ ] provide a way to extend ui routes via a fs provided by plugin
   - [ ] this may need to recompile the ui if i stick with using svelte
