@@ -3,6 +3,7 @@
 - [x] enable/disable rewrite features per proxy
 
 # logger
+- [ ] rotate log files
 - [ ] live viewer for logs (probably driven by server side events)
   - technically this exists but its ugly, it needs some propper formatting
 

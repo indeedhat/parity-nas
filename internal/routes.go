@@ -12,6 +12,13 @@ import (
 	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
+const (
+	PermissionPublic uint8 = iota
+	PermissionGuest
+	PermissionUser
+	PermissionAdmin
+)
+
 func BuildRoutes(r servermux.Router, proxyCfg *config.WebProxyCfg) *http.ServeMux {
 	logger := logging.New("router")
 	r = r.Group("", logging.LoggingMiddleware(logger))
@@ -39,8 +46,21 @@ func BuildRoutes(r servermux.Router, proxyCfg *config.WebProxyCfg) *http.ServeMu
 	return r.ServerMux()
 }
 
-func PluginRouter(r servermux.Router, pluginName string) servermux.Router {
+func PluginRouter(r servermux.Router, premission uint8, pluginName string) servermux.Router {
 	logger := logging.New("router").WithAttr("plugin", pluginName)
+
+	var middleware servermux.Middleware
+	switch permission {
+	case PermissionPublic:
+		middleware = nil
+	case PermissionGuest:
+		middleware = auth.IsGuestMiddleware
+	case PermissionUser:
+		middleware = auth.IsLoggedInMiddleware
+	case PermissionAdmin:
+		middleware = auth.UserHasPermissionMiddleware(auth.PermissionAdmin))
+	default:
+	}
 
 	return r.Group("", logging.LoggingMiddleware(logger), auth.IsLoggedInMiddleware)
 }

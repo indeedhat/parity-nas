@@ -53,6 +53,10 @@ func (r Router) apply(handler http.HandlerFunc, middleware ...Middleware) http.H
 	stack := append(r.middleware, middleware...)
 
 	for i := range stack {
+		if stack[i] == nil {
+			continue
+		}
+
 		handler = stack[len(stack)-1-i](handler)
 	}
 

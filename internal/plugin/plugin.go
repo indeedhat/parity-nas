@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path"
@@ -88,15 +89,39 @@ func (m PluginManager) initializePlugin(entry config.PluginEntry) error {
 		return err
 	}
 
-	initPlugin, ok := f.(func(router servermux.Router, logger *logging.Logger) error)
+	logger := m.log.WithCategory("plugin").WithAttr("plugin", entry.Name()),
+
+	initPlugin, ok := f.(func(logger *logging.Logger) error)
 	if !ok {
 		return errors.New("invalid signature for Init function")
 	}
+	if err := initPlugin(logger); err != nil {
+		return err
+	}
 
-	return initPlugin(
-		parinas.PluginRouter(m.router, entry.Name()),
-		m.log.WithCategory("plugin").WithAttr("plugin", entry.Name()),
-	)
+	routers := map[string]uint8{
+		"PublicRoutes": parinas.PermissionPublic,
+		"GuestRoutes": parinas.PermissionGuest,
+		"UserRoutes": parinas.PermissionUser,
+		"AdminRoutes": parinas.PermissionAdmin,
+	}
+	for name, permission := range routers {
+		f, err := p.Lookup("Init")
+		if err != nil {
+			continue
+		}
+
+		initFunc, ok := f.(func(router servermux.Router, logger *logging.Logger) error)
+		if !ok {
+			return fmt.Errorf("invalid signature for %s function", name)
+		}
+
+		if err := initFunc(parinas.PluginRouter(m.router, permission, logger), logger); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m PluginManager) checkForExisting(entry config.PluginEntry) bool {

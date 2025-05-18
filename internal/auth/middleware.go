@@ -6,7 +6,7 @@ import (
 	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
-var (
+const (
 	PermissionAny   uint8 = 0
 	PermissionAdmin uint8 = 1
 	PermissionWrite uint8 = 2
