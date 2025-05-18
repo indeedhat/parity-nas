@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+	"path"
+	"strings"
 
 	"github.com/indeedhat/parity-nas/pkg/config"
 )
@@ -12,6 +14,7 @@ type PluginCfg struct {
 	Version uint `icl:"version"`
 
 	SavePath string        `icl:"save_path"`
+	TempPath string        `icl:"temp_path"`
 	Plugins  []PluginEntry `icl:"plugin"`
 }
 
@@ -19,6 +22,27 @@ type PluginEntry struct {
 	GithubLink string         `icl:".param"`
 	Version    string         `icl:"version"`
 	Data       map[string]any `icl:"data"`
+}
+
+func (e PluginEntry) Name() string {
+	parts := strings.Split(e.GithubLink, "/")
+	return parts[len(parts)-1]
+}
+
+func (e PluginEntry) ArchiveUrl() string {
+	return e.GithubLink + "/archive/refs/tags/" + e.Version + ".zip"
+}
+
+func (e PluginEntry) ArchiveSavePath(cfg *PluginCfg) string {
+	return e.ArchiveExtractPath(cfg) + ".zip"
+}
+
+func (e PluginEntry) ArchiveExtractPath(cfg *PluginCfg) string {
+	return path.Join(cfg.TempPath, e.Name()+"_"+e.Version)
+}
+
+func (e PluginEntry) SharedObjectPath(cfg *PluginCfg) string {
+	return path.Join(cfg.SavePath, e.Name()+"_"+e.Version) + ".so"
 }
 
 // Server initializes a ServerConfig struct
