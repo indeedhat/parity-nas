@@ -100,7 +100,7 @@ func (m PluginManager) initializePlugin(entry config.PluginEntry) error {
 }
 
 func (m PluginManager) checkForExisting(entry config.PluginEntry) bool {
-	_, err := os.Stat(entry.SharedObjectPath(m.cfg))
+	_, err := plugin.Open(entry.SharedObjectPath(m.cfg))
 
-	return !errors.Is(err, os.ErrNotExist)
+	return err == nil
 }
