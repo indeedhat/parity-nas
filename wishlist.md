@@ -4,6 +4,7 @@
 
 # logger
 - [ ] live viewer for logs (probably driven by server side events)
+  - technically this exists but its ugly, it needs some propper formatting
 
 # docker
 - [ ] provide a web ui to manage docker compose based applications
@@ -31,8 +32,12 @@
 
 # cleanup
 - [ ] reduce external dependencies as much as possible
+- [ ] make sure everything is providing propper logging
 
 # plugins
 - [x] provide a way to extend api functionalyty with go plugins
 - [ ] provide a way to extend ui routes via a fs provided by plugin
   - [ ] this may need to recompile the ui if i stick with using svelte
+
+# docs
+- [ ] write some
