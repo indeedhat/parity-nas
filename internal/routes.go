@@ -39,8 +39,8 @@ func BuildRoutes(r servermux.Router, proxyCfg *config.WebProxyCfg) *http.ServeMu
 	return r.ServerMux()
 }
 
-func PluginRouter(r servermux.Router) servermux.Router {
-	logger := logging.New("plugin-router")
+func PluginRouter(r servermux.Router, pluginName string) servermux.Router {
+	logger := logging.New("router").WithAttr("plugin", pluginName)
 
 	return r.Group("", logging.LoggingMiddleware(logger), auth.IsLoggedInMiddleware)
 }

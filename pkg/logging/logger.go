@@ -103,6 +103,14 @@ func (l *Logger) WithData(data Data) *Logger {
 	}
 }
 
+func (l *Logger) WithAttr(key string, val any) *Logger {
+	return &Logger{
+		slog:     l.slog.With(key, val),
+		category: l.category,
+		ctx:      l.ctx,
+	}
+}
+
 type Data map[string]any
 
 func (d Data) asList() []any {

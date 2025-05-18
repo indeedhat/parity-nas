@@ -16,7 +16,10 @@
 - [x] persist the terminal session between page loads
 
 # plugins
-- [ ] provide a plugin system for external packages
+- [x] provide a way to extend api functionalyty with go plugins
+- [ ] provide a way to extend ui routes via a fs provided by plugin
+  - [ ] this may need to recompile the ui if i stick with using svelte
+    - i might swap to htmx as i don't think svele actually gives me any benefit for this project other than the component libs
 
 # health check
 - [ ] run a health check on startup to ensure all required dependencies are present on the machine
@@ -33,11 +36,6 @@
 # cleanup
 - [ ] reduce external dependencies as much as possible
 - [ ] make sure everything is providing propper logging
-
-# plugins
-- [x] provide a way to extend api functionalyty with go plugins
-- [ ] provide a way to extend ui routes via a fs provided by plugin
-  - [ ] this may need to recompile the ui if i stick with using svelte
 
 # docs
 - [ ] write some

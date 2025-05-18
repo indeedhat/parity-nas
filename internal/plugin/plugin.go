@@ -7,6 +7,7 @@ import (
 	"path"
 	"plugin"
 
+	parinas "github.com/indeedhat/parity-nas/internal"
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/pkg/logging"
 	servermux "github.com/indeedhat/parity-nas/pkg/server_mux"
@@ -92,7 +93,10 @@ func (m PluginManager) initializePlugin(entry config.PluginEntry) error {
 		return errors.New("invalid signature for Init function")
 	}
 
-	return initPlugin(m.router, m.log.WithCategory(entry.Name()))
+	return initPlugin(
+		parinas.PluginRouter(m.router, entry.Name()),
+		m.log.WithCategory("plugin").WithAttr("plugin", entry.Name()),
+	)
 }
 
 func (m PluginManager) checkForExisting(entry config.PluginEntry) bool {
