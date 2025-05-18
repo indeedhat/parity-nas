@@ -18,6 +18,7 @@
 
 # plugins
 - [x] provide a way to extend api functionalyty with go plugins
+- [ ] currently when plugins get rebuild because of a version missmatch the execution fails when trying to open them again, if a rebuild is detected i need to restart the parinas binary
 - [ ] provide a way to extend ui routes via a fs provided by plugin
   - [ ] this may need to recompile the ui if i stick with using svelte
     - i might swap to htmx as i don't think svele actually gives me any benefit for this project other than the component libs

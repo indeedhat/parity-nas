@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	parinas "github.com/indeedhat/parity-nas/internal"
 	"github.com/indeedhat/parity-nas/internal/config"
@@ -54,10 +59,33 @@ func main() {
 		}
 
 		pm := plugin.NewManager(pluginCfg, logger, router)
+		defer pm.Close()
+
 		if err := pm.Init(); err != nil {
 			logger.Fatalf("Failed to initialize plugins: %s", err)
 		}
 	}
 
-	logger.Infof("ListenAndServer: %v", http.ListenAndServe(":8080", c.Handler(mux)))
+	svr := &http.Server{
+		Addr:    ":8080",
+		Handler: c.Handler(mux),
+	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		logger.Info("Starting server on :8080")
+		logger.Infof("ListenAndServer: %v", svr.ListenAndServe())
+	}()
+
+	<-quit
+	logger.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	if err := svr.Shutdown(ctx); err != nil {
+		logger.Info("Server forced to shutdown after timeout")
+	}
 }

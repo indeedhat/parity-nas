@@ -46,10 +46,11 @@ func BuildRoutes(r servermux.Router, proxyCfg *config.WebProxyCfg) *http.ServeMu
 	return r.ServerMux()
 }
 
-func PluginRouter(r servermux.Router, premission uint8, pluginName string) servermux.Router {
+func PluginRouter(r servermux.Router, permission uint8, pluginName string) servermux.Router {
 	logger := logging.New("router").WithAttr("plugin", pluginName)
 
 	var middleware servermux.Middleware
+
 	switch permission {
 	case PermissionPublic:
 		middleware = nil
@@ -58,9 +59,10 @@ func PluginRouter(r servermux.Router, premission uint8, pluginName string) serve
 	case PermissionUser:
 		middleware = auth.IsLoggedInMiddleware
 	case PermissionAdmin:
-		middleware = auth.UserHasPermissionMiddleware(auth.PermissionAdmin))
+		middleware = auth.UserHasPermissionMiddleware(auth.PermissionAdmin)
 	default:
+		logger.Fatalf("requested plugin router with invalid permission: %d", permission)
 	}
 
-	return r.Group("", logging.LoggingMiddleware(logger), auth.IsLoggedInMiddleware)
+	return r.Group("", logging.LoggingMiddleware(logger), middleware)
 }
