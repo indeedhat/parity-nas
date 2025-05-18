@@ -19,14 +19,13 @@ func LoggingMiddleware(logger *logging.Logger) servermux.Middleware {
 			wrw := &responseWrapper{ResponseWriter: rw}
 
 			defer func() {
-				logger.Zerolog().Info().
-					Str("category", logger.Category()).
-					Str("method", r.Method).
-					Stringer("url", r.URL).
-					Int("status", wrw.status).
-					Int("size", wrw.size).
-					Dur("duration", time.Since(start)).
-					Msg("")
+				logger.WithData(logging.Data{
+					"method":   r.Method,
+					"url":      r.URL.String(),
+					"status":   wrw.status,
+					"size":     wrw.size,
+					"duration": time.Since(start),
+				}).Info("")
 			}()
 
 			next(wrw, r)

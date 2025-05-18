@@ -2,12 +2,11 @@ package logging
 
 import (
 	"log"
+	"log/slog"
 	"os"
-	"time"
 
 	"github.com/indeedhat/parity-nas/internal/config"
 	"github.com/indeedhat/parity-nas/pkg/logging"
-	"github.com/rs/zerolog"
 )
 
 func init() {
@@ -22,18 +21,18 @@ func init() {
 	}
 
 	buffer = newBuffer(int(cfg.MemoryBufferLen))
-	console := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: time.RFC3339,
-	}
 
-	multiWriter := zerolog.MultiLevelWriter(buffer, fh, console)
-	zl = zerolog.New(multiWriter).With().Timestamp().Logger()
+	opts := &slog.HandlerOptions{Level: slog.LevelDebug}
+	sl = slog.New(splitHandler{
+		slog.NewTextHandler(os.Stdout, opts),
+		slog.NewJSONHandler(fh, opts),
+		slog.NewJSONHandler(buffer, opts),
+	})
 }
 
 var (
+	sl     *slog.Logger
 	fh     *os.File
-	zl     zerolog.Logger
 	buffer *LogBuffer
 )
 
@@ -45,5 +44,5 @@ func Close() {
 }
 
 func New(category string) *logging.Logger {
-	return logging.New(zl, category)
+	return logging.New(sl, category)
 }

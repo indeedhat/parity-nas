@@ -2,141 +2,115 @@ package logging
 
 import (
 	"fmt"
+	"log/slog"
 
-	"github.com/rs/zerolog"
+	"golang.org/x/net/context"
 )
 
 type Logger struct {
-	zerolog  *zerolog.Logger
+	slog     *slog.Logger
 	category string
+	ctx      context.Context
 }
 
-func New(zl zerolog.Logger, category string) *Logger {
+func New(sl *slog.Logger, category string) *Logger {
 	return &Logger{
-		zerolog:  &zl,
+		slog:     sl.With(slog.String("category", category)),
 		category: category,
+		ctx:      context.Background(),
+	}
+}
+
+func NewWithContext(ctx context.Context, sl *slog.Logger, category string) *Logger {
+	return &Logger{
+		slog:     sl.With(slog.String("category", category)),
+		category: category,
+		ctx:      ctx,
 	}
 }
 
 func (l *Logger) WithCategory(category string) *Logger {
 	return &Logger{
-		zerolog:  l.zerolog,
+		slog:     l.slog.With(slog.String("category", category)),
 		category: category,
+		ctx:      l.ctx,
 	}
 }
 
-func (l *Logger) Zerolog() *zerolog.Logger {
-	return l.zerolog
+func (l *Logger) WithCategoryContext(ctx context.Context, category string) *Logger {
+	return &Logger{
+		slog:     l.slog.With(slog.String("category", category)),
+		category: category,
+		ctx:      ctx,
+	}
+}
+
+func (l *Logger) Slog() *slog.Logger {
+	return l.slog
 }
 
 func (l *Logger) Category() string {
 	return l.category
 }
 
-func (l *Logger) Trace(msg string) {
-	l.zerolog.Trace().Str("category", l.category).Msg(msg)
-}
-
-func (l *Logger) Tracef(msg string, a ...any) {
-	l.zerolog.Trace().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
-}
-
 func (l *Logger) Debug(msg string) {
-	l.zerolog.Debug().Str("category", l.category).Msg(msg)
+	l.slog.DebugContext(l.ctx, msg)
 }
 
 func (l *Logger) Debugf(msg string, a ...any) {
-	l.zerolog.Debug().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
+	l.slog.DebugContext(l.ctx, fmt.Sprintf(msg, a...))
 }
 
 func (l *Logger) Info(msg string) {
-	l.zerolog.Info().Str("category", l.category).Msg(msg)
+	l.slog.InfoContext(l.ctx, msg)
 }
 
 func (l *Logger) Infof(msg string, a ...any) {
-	l.zerolog.Info().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
+	l.slog.InfoContext(l.ctx, fmt.Sprintf(msg, a...))
 }
 
-func (l *Logger) Warning(msg string) {
-	l.zerolog.Warn().Str("category", l.category).Msg(msg)
+func (l *Logger) Warn(msg string) {
+	l.slog.WarnContext(l.ctx, msg)
 }
 
 func (l *Logger) Warningf(msg string, a ...any) {
-	l.zerolog.Warn().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
+	l.slog.WarnContext(l.ctx, fmt.Sprintf(msg, a...))
 }
 
 func (l *Logger) Error(msg string) {
-	l.zerolog.Error().Str("category", l.category).Msg(msg)
+	l.slog.ErrorContext(l.ctx, msg)
 }
 
 func (l *Logger) Errorf(msg string, a ...any) {
-	l.zerolog.Error().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
+	l.slog.ErrorContext(l.ctx, fmt.Sprintf(msg, a...))
 }
 
 func (l *Logger) Fatal(msg string) {
-	l.zerolog.Fatal().Str("category", l.category).Msg(msg)
+	l.slog.ErrorContext(l.ctx, msg, "fatal_error", true)
+	panic(msg)
 }
 
 func (l *Logger) Fatalf(msg string, a ...any) {
-	l.zerolog.Fatal().Str("category", l.category).Msg(fmt.Sprintf(msg, a...))
+	l.slog.With("fatal_error", true).ErrorContext(l.ctx, fmt.Sprintf(msg, a...))
+	panic(msg)
 }
 
-func (l *Logger) WithData(data map[string]any) *DataLogEntry {
-	return &DataLogEntry{
-		Logger: l,
-		data:   data,
+func (l *Logger) WithData(data Data) *Logger {
+	return &Logger{
+		slog:     l.slog.With(data.asList()...),
+		category: l.category,
+		ctx:      l.ctx,
 	}
 }
 
-type DataLogEntry struct {
-	*Logger
-	data map[string]any
-}
+type Data map[string]any
 
-func (l *DataLogEntry) Trace(msg string) {
-	l.zerolog.Trace().Str("category", l.category).Fields(l.data).Msg(msg)
-}
+func (d Data) asList() []any {
+	list := make([]any, 0, len(d)*2)
 
-func (l *DataLogEntry) Tracef(msg string, a ...any) {
-	l.zerolog.Trace().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
-}
+	for k, v := range d {
+		list = append(list, k, v)
+	}
 
-func (l *DataLogEntry) Debug(msg string) {
-	l.zerolog.Debug().Str("category", l.category).Fields(l.data).Msg(msg)
-}
-
-func (l *DataLogEntry) Debugf(msg string, a ...any) {
-	l.zerolog.Debug().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
-}
-
-func (l *DataLogEntry) Info(msg string) {
-	l.zerolog.Info().Str("category", l.category).Fields(l.data).Msg(msg)
-}
-
-func (l *DataLogEntry) Infof(msg string, a ...any) {
-	l.zerolog.Info().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
-}
-
-func (l *DataLogEntry) Warning(msg string) {
-	l.zerolog.Warn().Str("category", l.category).Fields(l.data).Msg(msg)
-}
-
-func (l *DataLogEntry) Warningf(msg string, a ...any) {
-	l.zerolog.Warn().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
-}
-
-func (l *DataLogEntry) Error(msg string) {
-	l.zerolog.Error().Str("category", l.category).Fields(l.data).Msg(msg)
-}
-
-func (l *DataLogEntry) Errorf(msg string, a ...any) {
-	l.zerolog.Error().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
-}
-
-func (l *DataLogEntry) Fatal(msg string) {
-	l.zerolog.Fatal().Str("category", l.category).Fields(l.data).Msg(msg)
-}
-
-func (l *DataLogEntry) Fatalf(msg string, a ...any) {
-	l.zerolog.Fatal().Str("category", l.category).Fields(l.data).Msg(fmt.Sprintf(msg, a...))
+	return list
 }
