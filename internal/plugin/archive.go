@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -13,6 +14,10 @@ import (
 )
 
 func (m PluginManager) downloadArchive(entry config.PluginEntry) error {
+	if err := os.MkdirAll(m.cfg.TempPath, os.ModePerm); err != nil {
+		return err
+	}
+
 	fh, err := os.Create(entry.ArchiveSavePath(m.cfg))
 	if err != nil {
 		return err
@@ -36,12 +41,12 @@ func (m PluginManager) extractArchive(entry config.PluginEntry) error {
 	}
 
 	dst := entry.ArchiveExtractPath(m.cfg)
-	if err := os.MkdirAll(dst, os.ModePerm); err != nil {
+	if err := os.MkdirAll((dst), os.ModePerm); err != nil {
 		return err
 	}
 
 	for _, f := range zr.File {
-		if err := extractFile(f, dst); err != nil {
+		if err := extractFile(f, path.Dir(dst)); err != nil {
 			return err
 		}
 	}

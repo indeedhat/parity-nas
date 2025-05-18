@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/indeedhat/parity-nas/pkg/logging"
 	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
-func LoggingMiddleware(logger *Logger) servermux.Middleware {
+func LoggingMiddleware(logger *logging.Logger) servermux.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {
 		return func(rw http.ResponseWriter, r *http.Request) {
 			start := time.Now()

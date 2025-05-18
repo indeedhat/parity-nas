@@ -12,13 +12,9 @@ import (
 	"github.com/indeedhat/parity-nas/pkg/server_mux"
 )
 
-func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg) *http.ServeMux {
+func BuildRoutes(r servermux.Router, proxyCfg *config.WebProxyCfg) *http.ServeMux {
 	logger := logging.New("router")
-
-	r := servermux.NewRouter(
-		serverCfg,
-		logging.LoggingMiddleware(logger),
-	)
+	r = r.Group("", logging.LoggingMiddleware(logger))
 
 	r.HandleFunc("/"+proxyCfg.Prefix+"/", webproxy.WebProxyController)
 
@@ -41,4 +37,10 @@ func BuildRoutes(serverCfg servermux.ServerConfig, proxyCfg *config.WebProxyCfg)
 	}
 
 	return r.ServerMux()
+}
+
+func PluginRouter(r servermux.Router) servermux.Router {
+	logger := logging.New("plugin-router")
+
+	return r.Group("", logging.LoggingMiddleware(logger), auth.IsLoggedInMiddleware)
 }

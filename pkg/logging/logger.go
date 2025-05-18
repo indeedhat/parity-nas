@@ -18,6 +18,13 @@ func New(zl zerolog.Logger, category string) *Logger {
 	}
 }
 
+func (l *Logger) WithCategory(category string) *Logger {
+	return &Logger{
+		zerolog:  l.zerolog,
+		category: category,
+	}
+}
+
 func (l *Logger) Zerolog() *zerolog.Logger {
 	return l.zerolog
 }

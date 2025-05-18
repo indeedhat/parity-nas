@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -19,9 +20,8 @@ type PluginCfg struct {
 }
 
 type PluginEntry struct {
-	GithubLink string         `icl:".param"`
-	Version    string         `icl:"version"`
-	Data       map[string]any `icl:"data"`
+	GithubLink string `icl:".param"`
+	Version    string `icl:"version"`
 }
 
 func (e PluginEntry) Name() string {
@@ -30,7 +30,15 @@ func (e PluginEntry) Name() string {
 }
 
 func (e PluginEntry) ArchiveUrl() string {
-	return e.GithubLink + "/archive/refs/tags/" + e.Version + ".zip"
+	u, err := url.Parse(e.GithubLink)
+	if err != nil {
+		return ""
+	}
+
+	u.Scheme = "https"
+	final, _ := url.JoinPath(u.String(), "/archive/refs/tags/"+e.Version+".zip")
+
+	return final
 }
 
 func (e PluginEntry) ArchiveSavePath(cfg *PluginCfg) string {
